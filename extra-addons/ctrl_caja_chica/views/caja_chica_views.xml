@@ -1,0 +1,53 @@
+<odoo>
+    <record id="action_caja_chica" model="ir.actions.act_window">
+        <field name="name">Movimientos Caja Chica</field>
+        <field name="res_model">ctrl.caja.chica</field>
+        <field name="view_mode">tree,form,kanban</field>
+    </record>
+
+    <record id="view_caja_chica_tree" model="ir.ui.view">
+        <field name="name">ctrl.caja.chica.tree</field>
+        <field name="model">ctrl.caja.chica</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="fecha"/>
+                <field name="tipo"/>
+                <field name="monto"/>
+                <field name="categoria_id"/>
+                <field name="responsable_id"/>
+                <field name="estado_pago"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_caja_chica_form" model="ir.ui.view">
+        <field name="name">ctrl.caja.chica.form</field>
+        <field name="model">ctrl.caja.chica</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="fecha"/>
+                        <field name="tipo"/>
+                        <field name="monto"/>
+                        <field name="currency_id"/>
+                        <field name="categoria_id"/>
+                        <field name="centro_costo"/>
+                        <field name="responsable_id"/>
+                        <field name="proveedor"/>
+                        <field name="metodo_pago"/>
+                        <field name="numero_factura"/>
+                        <field name="estado_pago"/>
+                    </group>
+                    <group>
+                        <field name="observaciones" colspan="4"/>
+                        <field name="arqueo_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <menuitem id="menu_ctrl_caja_root" name="Caja Chica"/>
+    <menuitem id="menu_ctrl_caja_mov" name="Movimientos" parent="menu_ctrl_caja_root" action="action_caja_chica"/>
+</odoo>

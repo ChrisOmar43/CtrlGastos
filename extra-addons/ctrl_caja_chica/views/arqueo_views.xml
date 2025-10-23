@@ -1,0 +1,58 @@
+<odoo>
+    <record id="action_caja_arqueo" model="ir.actions.act_window">
+        <field name="name">Arqueos</field>
+        <field name="res_model">ctrl.caja.arqueo</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_caja_arqueo_tree" model="ir.ui.view">
+        <field name="name">ctrl.caja.arqueo.tree</field>
+        <field name="model">ctrl.caja.arqueo</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="fecha"/>
+                <field name="monto_caja"/>
+                <field name="monto_real"/>
+                <field name="diferencia"/>
+                <field name="realizo_id"/>
+                <field name="reviso_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_caja_arqueo_form" model="ir.ui.view">
+        <field name="name">ctrl.caja.arqueo.form</field>
+        <field name="model">ctrl.caja.arqueo</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="fecha"/>
+                        <field name="mes"/>
+                        <field name="monto_caja"/>
+                        <field name="monto_real"/>
+                        <field name="diferencia"/>
+                    </group>
+                    <group>
+                        <field name="realizo_id"/>
+                        <field name="reviso_id"/>
+                    </group>
+                    <notebook>
+                        <page string="Gastos vinculados">
+                            <field name="gastos_ids">
+                                <tree>
+                                    <field name="fecha"/>
+                                    <field name="tipo"/>
+                                    <field name="monto"/>
+                                    <field name="categoria_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <menuitem id="menu_ctrl_caja_arqueo" name="Arqueos" parent="menu_ctrl_caja_root" action="action_caja_arqueo"/>
+</odoo>

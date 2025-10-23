@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ctrl_caja_chica_user,access_ctrl_caja_chica_user,model_ctrl_caja_chica,,1,1,1,1
+access_ctrl_caja_arqueo_user,access_ctrl_caja_arqueo_user,model_ctrl_caja_arqueo,,1,1,1,1
+access_ctrl_caja_param_user,access_ctrl_caja_param_user,model_ctrl_caja_param,,1,1,1,1
+
