@@ -42,7 +42,7 @@
                             <field name="gastos_ids">
                                 <tree>
                                     <field name="fecha"/>
-                                    <field name="tipo"/>
+                                    <field name="tipo_gasto"/>
                                     <field name="monto"/>
                                     <field name="categoria_id"/>
                                 </tree>

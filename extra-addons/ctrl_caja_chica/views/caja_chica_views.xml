@@ -1,53 +1,186 @@
 <odoo>
-    <record id="action_caja_chica" model="ir.actions.act_window">
-        <field name="name">Movimientos Caja Chica</field>
-        <field name="res_model">ctrl.caja.chica</field>
-        <field name="view_mode">tree,form,kanban</field>
-    </record>
+    <data>
+        <!-- Secuencia para referencia automática -->
+        <record id="sequence_ctrl_caja_chica" model="ir.sequence">
+            <field name="name">Caja Chica Movimientos</field>
+            <field name="code">ctrl.caja.chica</field>
+            <field name="prefix">CC/</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
 
-    <record id="view_caja_chica_tree" model="ir.ui.view">
-        <field name="name">ctrl.caja.chica.tree</field>
-        <field name="model">ctrl.caja.chica</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="fecha"/>
-                <field name="tipo"/>
-                <field name="monto"/>
-                <field name="categoria_id"/>
-                <field name="responsable_id"/>
-                <field name="estado_pago"/>
-            </tree>
-        </field>
-    </record>
+        <!-- Acción principal -->
+        <record id="action_caja_chica" model="ir.actions.act_window">
+            <field name="name">Movimientos Caja Chica</field>
+            <field name="res_model">ctrl.caja.chica</field>
+            <field name="view_mode">tree,form,pivot,graph</field>
+            <field name="context">{'search_default_group_by_mes': 1}</field>
+        </record>
 
-    <record id="view_caja_chica_form" model="ir.ui.view">
-        <field name="name">ctrl.caja.chica.form</field>
-        <field name="model">ctrl.caja.chica</field>
-        <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <group>
-                        <field name="fecha"/>
-                        <field name="tipo"/>
-                        <field name="monto"/>
-                        <field name="currency_id"/>
-                        <field name="categoria_id"/>
-                        <field name="centro_costo"/>
-                        <field name="responsable_id"/>
-                        <field name="proveedor"/>
-                        <field name="metodo_pago"/>
-                        <field name="numero_factura"/>
-                        <field name="estado_pago"/>
+        <!-- Vista Tree -->
+        <record id="view_caja_chica_tree" model="ir.ui.view">
+            <field name="name">ctrl.caja.chica.tree</field>
+            <field name="model">ctrl.caja.chica</field>
+            <field name="arch" type="xml">
+                <tree decoration-muted="estado_pago=='pagada'" 
+                      decoration-danger="estado_pago=='pendiente'"
+                      decoration-warning="estado_pago=='parcial'">
+                    <field name="name"/>
+                    <field name="fecha"/>
+                    <field name="fecha_solicitud" optional="hide"/>
+                    <field name="mes"/>
+                    <field name="semana" optional="hide"/>
+                    <field name="tipo_gasto"/>
+                    <field name="categoria_id"/>
+                    <field name="centro_costo"/>
+                    <field name="monto" sum="Total"/>
+                    <field name="proveedor" optional="hide"/>
+                    <field name="estado_pago"/>
+                    <field name="metodo_pago" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista Form -->
+        <record id="view_caja_chica_form" model="ir.ui.view">
+            <field name="name">ctrl.caja.chica.form</field>
+            <field name="model">ctrl.caja.chica</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="estado_pago" widget="statusbar" 
+                               statusbar_visible="pendiente,pagada"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Información Principal">
+                                <field name="fecha_solicitud"/>
+                                <field name="fecha"/>
+                                <field name="tipo_gasto"/>
+                                <field name="categoria_id"/>
+                                <field name="centro_costo"/>
+                                <field name="responsable_id"/>
+                            </group>
+                            <group string="Monto y Pago">
+                                <field name="monto"/>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="metodo_pago"/>
+                                <field name="proveedor"/>
+                            </group>
+                        </group>
+                        
+                        <notebook>
+                            <page string="Información Adicional">
+                                <group>
+                                    <group string="Documento">
+                                        <field name="folio_pago"/>
+                                        <field name="tipo_documento"/>
+                                        <field name="numero_factura"/>
+                                    </group>
+                                    <group string="Detalle de Compra">
+                                        <field name="cantidad"/>
+                                        <field name="unidad"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <field name="descripcion" placeholder="Descripción detallada del gasto..."/>
+                                </group>
+                            </page>
+                            <page string="Información Técnica">
+                                <group>
+                                    <field name="mes" readonly="1"/>
+                                    <field name="semana" readonly="1"/>
+                                    <field name="arqueo_id"/>
+                                    <field name="create_uid"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista Search con filtros -->
+        <record id="view_caja_chica_search" model="ir.ui.view">
+            <field name="name">ctrl.caja.chica.search</field>
+            <field name="model">ctrl.caja.chica</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="categoria_id"/>
+                    <field name="proveedor"/>
+                    <field name="centro_costo"/>
+                    
+                    <filter string="Pendientes" name="pendientes" 
+                            domain="[('estado_pago', '=', 'pendiente')]"/>
+                    <filter string="Pagadas" name="pagadas" 
+                            domain="[('estado_pago', '=', 'pagada')]"/>
+                    <separator/>
+                    <filter string="Caja Chica" name="caja_chica" 
+                            domain="[('tipo_gasto', '=', 'caja_chica')]"/>
+                    <filter string="Gastos Fijos" name="fijos" 
+                            domain="[('tipo_gasto', '=', 'fijo')]"/>
+                    <filter string="Gastos Variables" name="variables" 
+                            domain="[('tipo_gasto', '=', 'variable')]"/>
+                    <separator/>
+                    <filter string="Mes Actual" name="mes_actual" 
+                            domain="[('fecha', '&gt;=', context_today().strftime('%Y-%m-01')), 
+                                     ('fecha', '&lt;=', (context_today() + relativedelta(day=31)).strftime('%Y-%m-%d'))]"/>
+                    
+                    <group expand="0" string="Agrupar por">
+                        <filter string="Mes" name="group_by_mes" 
+                                context="{'group_by': 'mes'}"/>
+                        <filter string="Tipo de Gasto" name="group_by_tipo" 
+                                context="{'group_by': 'tipo_gasto'}"/>
+                        <filter string="Centro de Costo" name="group_by_centro" 
+                                context="{'group_by': 'centro_costo'}"/>
+                        <filter string="Categoría" name="group_by_categoria" 
+                                context="{'group_by': 'categoria_id'}"/>
+                        <filter string="Estado" name="group_by_estado" 
+                                context="{'group_by': 'estado_pago'}"/>
                     </group>
-                    <group>
-                        <field name="observaciones" colspan="4"/>
-                        <field name="arqueo_id"/>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
+                </search>
+            </field>
+        </record>
 
-    <menuitem id="menu_ctrl_caja_root" name="Caja Chica"/>
-    <menuitem id="menu_ctrl_caja_mov" name="Movimientos" parent="menu_ctrl_caja_root" action="action_caja_chica"/>
+        <!-- Vista Pivot para análisis -->
+        <record id="view_caja_chica_pivot" model="ir.ui.view">
+            <field name="name">ctrl.caja.chica.pivot</field>
+            <field name="model">ctrl.caja.chica</field>
+            <field name="arch" type="xml">
+                <pivot string="Análisis de Gastos">
+                    <field name="mes" type="row"/>
+                    <field name="centro_costo" type="col"/>
+                    <field name="monto" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <!-- Vista Graph -->
+        <record id="view_caja_chica_graph" model="ir.ui.view">
+            <field name="name">ctrl.caja.chica.graph</field>
+            <field name="model">ctrl.caja.chica</field>
+            <field name="arch" type="xml">
+                <graph string="Gastos por Mes" type="bar">
+                    <field name="mes"/>
+                    <field name="monto" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- Menú -->
+        <menuitem id="menu_ctrl_caja_root" name="Caja Chica" sequence="10"/>
+        <menuitem id="menu_ctrl_caja_mov" name="Movimientos" 
+                  parent="menu_ctrl_caja_root" action="action_caja_chica" sequence="10"/>
+    </data>
 </odoo>

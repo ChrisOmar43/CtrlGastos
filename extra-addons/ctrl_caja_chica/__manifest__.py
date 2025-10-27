@@ -1,9 +1,9 @@
 {
     "name": "Control de Caja Chica",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "summary": "Registrar y controlar movimientos de caja chica y arqueos",
     "description": "Módulo para llevar caja chica: movimientos, categorías, arqueos y reportes simples.",
-    "author": "Tu Nombre",
+    "author": "ChrisOmar",
     "website": "",
     "category": "Accounting",
     "depends": ["base", "hr"],
