@@ -1,0 +1,60 @@
+<odoo>
+    <data>
+        <!-- Categoría para organizar los grupos -->
+        <record id="module_category_caja_chica" model="ir.module.category">
+            <field name="name">Caja Chica</field>
+            <field name="description">Permisos para Control de Caja Chica</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- Grupo Base: Acceso al módulo -->
+        <record id="group_caja_user" model="res.groups">
+            <field name="name">Usuario Caja Chica</field>
+            <field name="category_id" ref="module_category_caja_chica"/>
+            <field name="comment">Acceso básico al módulo</field>
+        </record>
+
+        <!-- Grupo: Solicitante -->
+        <record id="group_caja_solicitante" model="res.groups">
+            <field name="name">Solicitante</field>
+            <field name="category_id" ref="module_category_caja_chica"/>
+            <field name="implied_ids" eval="[(4, ref('group_caja_user'))]"/>
+            <field name="comment">Puede crear y ver sus propias solicitudes</field>
+        </record>
+
+        <!-- Grupo: Autorizador Nivel 1 -->
+        <record id="group_caja_autorizador_nivel1" model="res.groups">
+            <field name="name">Autorizador Nivel 1</field>
+            <field name="category_id" ref="module_category_caja_chica"/>
+            <field name="implied_ids" eval="[(4, ref('group_caja_user'))]"/>
+            <field name="comment">Puede autorizar solicitudes menores a $1,000</field>
+        </record>
+
+        <!-- Grupo: Autorizador Nivel 2 -->
+        <record id="group_caja_autorizador_nivel2" model="res.groups">
+            <field name="name">Autorizador Nivel 2</field>
+            <field name="category_id" ref="module_category_caja_chica"/>
+            <field name="implied_ids" eval="[(4, ref('group_caja_user'))]"/>
+            <field name="comment">Puede autorizar solicitudes de $1,000 a $2,000</field>
+        </record>
+
+        <!-- Grupo: Autorizador Nivel 3 -->
+        <record id="group_caja_autorizador_nivel3" model="res.groups">
+            <field name="name">Autorizador Nivel 3</field>
+            <field name="category_id" ref="module_category_caja_chica"/>
+            <field name="implied_ids" eval="[(4, ref('group_caja_user'))]"/>
+            <field name="comment">Puede autorizar solicitudes mayores a $2,000</field>
+        </record>
+
+        <!-- Grupo: Administrador -->
+        <record id="group_caja_admin" model="res.groups">
+            <field name="name">Administrador Caja Chica</field>
+            <field name="category_id" ref="module_category_caja_chica"/>
+            <field name="implied_ids" eval="[(4, ref('group_caja_solicitante')),
+                                             (4, ref('group_caja_autorizador_nivel1')),
+                                             (4, ref('group_caja_autorizador_nivel2')),
+                                             (4, ref('group_caja_autorizador_nivel3'))]"/>
+            <field name="comment">Acceso completo al módulo</field>
+        </record>
+    </data>
+</odoo>

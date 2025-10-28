@@ -1,0 +1,259 @@
+<odoo>
+    <data>
+        <!-- Secuencia para número de solicitud -->
+        <record id="sequence_ctrl_caja_solicitud" model="ir.sequence">
+            <field name="name">Solicitudes de Compra</field>
+            <field name="code">ctrl.caja.solicitud</field>
+            <field name="prefix">SOL/</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <!-- Acción principal (solo muestra mis solicitudes) -->
+        <record id="action_caja_solicitud" model="ir.actions.act_window">
+            <field name="name">Mis Solicitudes</field>
+            <field name="res_model">ctrl.caja.solicitud</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_caja_solicitud_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_caja_solicitud_form')})]"/>
+            <field name="context">{
+                'default_responsable_id': uid,
+                'search_default_mis_solicitudes': 1
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crear una nueva solicitud de compra
+                </p>
+                <p>
+                    Registre aquí sus solicitudes de compra. Serán enviadas automáticamente
+                    al nivel de autorización correspondiente según el monto.
+                </p>
+            </field>
+        </record>
+
+        <!-- Vista Tree -->
+        <record id="view_caja_solicitud_tree" model="ir.ui.view">
+            <field name="name">ctrl.caja.solicitud.tree</field>
+            <field name="model">ctrl.caja.solicitud</field>
+            <field name="arch" type="xml">
+                <tree decoration-muted="estado in ['cancelado', 'rechazado']"
+                      decoration-success="estado == 'autorizado'"
+                      decoration-info="estado == 'borrador'"
+                      decoration-warning="estado in ['solicitado', 'autorizacion_nivel1', 'autorizacion_nivel2', 'autorizacion_nivel3']"
+                      sample="1">
+                    <header>
+                        <button name="action_crear_solicitud" 
+                                string="➕ Nueva Solicitud" 
+                                type="object" 
+                                class="btn-primary"/>
+                    </header>
+                    <field name="numero_solicitud"/>
+                    <field name="fecha_solicitud"/>
+                    <field name="categoria_id"/>
+                    <field name="concepto_texto" optional="hide"/>
+                    <field name="monto_estimado" sum="Total"/>
+                    <field name="nivel_requerido"/>
+                    <field name="metodo_pago" optional="hide"/>
+                    <field name="estado" widget="badge"
+                           decoration-success="estado == 'autorizado'"
+                           decoration-danger="estado == 'rechazado'"
+                           decoration-muted="estado == 'cancelado'"
+                           decoration-warning="estado in ['autorizacion_nivel1', 'autorizacion_nivel2', 'autorizacion_nivel3']"
+                           decoration-info="estado == 'borrador'"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista Form -->
+        <record id="view_caja_solicitud_form" model="ir.ui.view">
+            <field name="name">ctrl.caja.solicitud.form</field>
+            <field name="model">ctrl.caja.solicitud</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_solicitar" 
+                                string="Enviar Solicitud" 
+                                type="object" 
+                                class="oe_highlight"
+                                invisible="estado != 'borrador'"/>
+                        <button name="action_cancelar" 
+                                string="Cancelar" 
+                                type="object"
+                                invisible="estado in ['autorizado', 'rechazado', 'cancelado']"/>
+                        <button name="action_volver_borrador" 
+                                string="Regresar a Borrador" 
+                                type="object"
+                                invisible="estado not in ['rechazado', 'cancelado']"/>
+                        <field name="estado" widget="statusbar" 
+                               statusbar_visible="borrador,solicitado,autorizacion_nivel1,autorizacion_nivel2,autorizacion_nivel3,autorizado"/>
+                    </header>
+                    
+                    <sheet>
+                        <!-- Campos invisibles necesarios para condiciones -->
+                        <field name="movimiento_id" invisible="1"/>
+                        
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_movimiento" 
+                                    type="object" 
+                                    class="oe_stat_button" 
+                                    icon="fa-money"
+                                    invisible="not movimiento_id">
+                                <div class="o_stat_info">
+                                    <span class="o_stat_text">Ver</span>
+                                    <span class="o_stat_text">Pago</span>
+                                </div>
+                            </button>
+                        </div>
+                        
+                        <widget name="web_ribbon" title="Autorizado" 
+                                bg_color="text-bg-success" 
+                                invisible="estado != 'autorizado'"/>
+                        <widget name="web_ribbon" title="Rechazado" 
+                                bg_color="text-bg-danger" 
+                                invisible="estado != 'rechazado'"/>
+                        <widget name="web_ribbon" title="Cancelado" 
+                                bg_color="text-bg-secondary" 
+                                invisible="estado != 'cancelado'"/>
+                        
+                        <div class="oe_title">
+                            <h1>
+                                <field name="numero_solicitud" readonly="1"/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group string="Información General">
+                                <field name="fecha_solicitud" readonly="estado != 'borrador'"/>
+                                <field name="responsable_id" readonly="1"/>
+                                <field name="nivel_requerido" readonly="1"/>
+                            </group>
+                            
+                            <group string="Detalle de Compra">
+                                <field name="monto_estimado" readonly="estado != 'borrador'"/>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="metodo_pago" readonly="estado != 'borrador'"/>
+                            </group>
+                        </group>
+                        
+                        <group>
+                            <group string="Concepto">
+                                <field name="concepto_otro" widget="boolean_toggle" readonly="estado != 'borrador'"/>
+                                <field name="categoria_id" 
+                                       placeholder="Seleccione un concepto..."
+                                       invisible="concepto_otro"
+                                       readonly="estado != 'borrador'"/>
+                                <field name="concepto_texto" 
+                                       placeholder="Escriba el concepto aquí..."
+                                       invisible="not concepto_otro"
+                                       readonly="estado != 'borrador'"/>
+                            </group>
+                            
+                            <group string="Proveedor">
+                                <field name="proveedor_otro" widget="boolean_toggle" readonly="estado != 'borrador'"/>
+                                <field name="proveedor_id" 
+                                       placeholder="Seleccione un proveedor..."
+                                       invisible="proveedor_otro"
+                                       readonly="estado != 'borrador'"/>
+                                <field name="proveedor_texto" 
+                                       placeholder="Escriba el nombre del proveedor aquí..."
+                                       invisible="not proveedor_otro"
+                                       readonly="estado != 'borrador'"/>
+                            </group>
+                        </group>
+                        
+                        <notebook>
+                            <page string="Descripción">
+                                <field name="descripcion" 
+                                       placeholder="Describa detalladamente qué necesita comprar y la justificación..."
+                                       readonly="estado != 'borrador'"/>
+                            </page>
+                            
+                            <page string="Autorizaciones" invisible="estado == 'borrador'">
+                                <group>
+                                    <group string="Nivel 1" invisible="not autorizador_nivel1_id">
+                                        <field name="autorizador_nivel1_id"/>
+                                        <field name="fecha_autorizacion_nivel1"/>
+                                        <field name="comentario_nivel1" readonly="1"/>
+                                    </group>
+                                    
+                                    <group string="Nivel 2" invisible="not autorizador_nivel2_id">
+                                        <field name="autorizador_nivel2_id"/>
+                                        <field name="fecha_autorizacion_nivel2"/>
+                                        <field name="comentario_nivel2" readonly="1"/>
+                                    </group>
+                                </group>
+                                
+                                <group>
+                                    <group string="Nivel 3" invisible="not autorizador_nivel3_id">
+                                        <field name="autorizador_nivel3_id"/>
+                                        <field name="fecha_autorizacion_nivel3"/>
+                                        <field name="comentario_nivel3" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+                            
+                            <page string="Notas Internas">
+                                <field name="notas_internas" placeholder="Notas internas (no visibles para autorizadores)..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista Search -->
+        <record id="view_caja_solicitud_search" model="ir.ui.view">
+            <field name="name">ctrl.caja.solicitud.search</field>
+            <field name="model">ctrl.caja.solicitud</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="numero_solicitud"/>
+                    <field name="categoria_id"/>
+                    <field name="concepto_texto"/>
+                    
+                    <filter string="Mis Solicitudes" name="mis_solicitudes" 
+                            domain="[('responsable_id', '=', uid)]"/>
+                    
+                    <separator/>
+                    <filter string="Borradores" name="borradores" 
+                            domain="[('estado', '=', 'borrador')]"/>
+                    <filter string="En Autorización" name="en_autorizacion" 
+                            domain="[('estado', 'in', ['autorizacion_nivel1', 'autorizacion_nivel2', 'autorizacion_nivel3'])]"/>
+                    <filter string="Autorizadas" name="autorizadas" 
+                            domain="[('estado', '=', 'autorizado')]"/>
+                    <filter string="Rechazadas" name="rechazadas" 
+                            domain="[('estado', '=', 'rechazado')]"/>
+                    
+                    <separator/>
+                    <filter string="Este Mes" name="este_mes" 
+                            domain="[('fecha_solicitud', '&gt;=', context_today().strftime('%Y-%m-01')), 
+                                     ('fecha_solicitud', '&lt;=', (context_today() + relativedelta(day=31)).strftime('%Y-%m-%d'))]"/>
+                    
+                    <group expand="0" string="Agrupar por">
+                        <filter string="Estado" name="group_by_estado" 
+                                context="{'group_by': 'estado'}"/>
+                        <filter string="Nivel de Autorización" name="group_by_nivel" 
+                                context="{'group_by': 'nivel_requerido'}"/>
+                        <filter string="Fecha" name="group_by_fecha" 
+                                context="{'group_by': 'fecha_solicitud'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Menú principal -->
+        <menuitem id="menu_ctrl_caja_solicitudes" 
+                  name="Mis Solicitudes" 
+                  parent="menu_ctrl_caja_root" 
+                  action="action_caja_solicitud" 
+                  sequence="5"/>
+    </data>
+</odoo>
