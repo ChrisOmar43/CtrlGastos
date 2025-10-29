@@ -102,6 +102,10 @@
                             </page>
                         </notebook>
                     </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
                 </form>
             </field>
         </record>
@@ -174,9 +178,17 @@
             </field>
         </record>
 
-        <!-- Menú -->
-        <menuitem id="menu_ctrl_caja_root" name="Caja Chica" sequence="10"/>
-        <menuitem id="menu_ctrl_caja_mov" name="Movimientos" 
-                  parent="menu_ctrl_caja_root" action="action_caja_chica" sequence="10"/>
+        <!-- Menú raíz -->
+        <menuitem id="menu_ctrl_caja_root" 
+                  name="Caja Chica" 
+                  sequence="10"/>
+        
+        <!-- Menú de Movimientos - Solo Admin -->
+        <menuitem id="menu_ctrl_caja_mov" 
+                  name="Movimientos" 
+                  parent="menu_ctrl_caja_root" 
+                  action="action_caja_chica"
+                  groups="ctrl_caja_chica.group_caja_admin"
+                  sequence="20"/>
     </data>
 </odoo>

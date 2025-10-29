@@ -58,11 +58,13 @@
                                 string="✓ AUTORIZAR" 
                                 type="object" 
                                 class="oe_highlight btn-success"
+                                invisible="estado != 'autorizacion_nivel1'"
                                 confirm="¿Está seguro de autorizar esta solicitud?"/>
                         <button name="action_rechazar_nivel1" 
                                 string="✗ RECHAZAR" 
                                 type="object" 
                                 class="btn-danger"
+                                invisible="estado != 'autorizacion_nivel1'"
                                 confirm="¿Está seguro de rechazar esta solicitud?"/>
                         <field name="estado" widget="statusbar" 
                                statusbar_visible="autorizacion_nivel1"/>
@@ -160,11 +162,13 @@
                                 string="✓ AUTORIZAR NIVEL 2" 
                                 type="object" 
                                 class="oe_highlight btn-success"
+                                invisible="estado != 'autorizacion_nivel2'"
                                 confirm="¿Está seguro de autorizar esta solicitud en Nivel 2?"/>
                         <button name="action_rechazar_nivel2" 
                                 string="✗ RECHAZAR" 
                                 type="object" 
                                 class="btn-danger"
+                                invisible="estado != 'autorizacion_nivel2'"
                                 confirm="¿Está seguro de rechazar esta solicitud?"/>
                         <field name="estado" widget="statusbar" 
                                statusbar_visible="autorizacion_nivel1,autorizacion_nivel2"/>
@@ -275,11 +279,13 @@
                                 string="✓ AUTORIZAR NIVEL 3 (FINAL)" 
                                 type="object" 
                                 class="oe_highlight btn-success"
+                                invisible="estado != 'autorizacion_nivel3'"
                                 confirm="¿Está seguro de autorizar esta solicitud? Esta es la autorización FINAL."/>
                         <button name="action_rechazar_nivel3" 
                                 string="✗ RECHAZAR" 
                                 type="object" 
                                 class="btn-danger"
+                                invisible="estado != 'autorizacion_nivel3'"
                                 confirm="¿Está seguro de rechazar esta solicitud?"/>
                         <field name="estado" widget="statusbar" 
                                statusbar_visible="autorizacion_nivel1,autorizacion_nivel2,autorizacion_nivel3"/>
@@ -418,29 +424,23 @@
                   parent="menu_ctrl_caja_root" 
                   sequence="10"/>
         
-        <!-- Solo autorizadores N1 ven este menú -->
         <menuitem id="menu_autorizador_nivel1" 
-                name="Nivel 1 (&lt; $1,000)" 
-                parent="menu_ctrl_caja_autorizaciones" 
-                action="action_autorizador_nivel1" 
-                groups="group_caja_autorizador_nivel1,group_caja_admin"
-                sequence="10"/>
+                  name="Nivel 1 (&lt; $1,000)" 
+                  parent="menu_ctrl_caja_autorizaciones" 
+                  action="action_autorizador_nivel1" 
+                  sequence="10"/>
 
-        <!-- Solo autorizadores N2 ven este menú -->
         <menuitem id="menu_autorizador_nivel2" 
-                name="Nivel 2 ($1,000 - $2,000)" 
-                parent="menu_ctrl_caja_autorizaciones" 
-                action="action_autorizador_nivel2" 
-                groups="group_caja_autorizador_nivel2,group_caja_admin"
-                sequence="20"/>
+                  name="Nivel 2 ($1,000 - $2,000)" 
+                  parent="menu_ctrl_caja_autorizaciones" 
+                  action="action_autorizador_nivel2" 
+                  sequence="20"/>
 
-        <!-- Solo autorizadores N3 ven este menú -->
         <menuitem id="menu_autorizador_nivel3" 
-                name="Nivel 3 (&gt; $2,000)" 
-                parent="menu_ctrl_caja_autorizaciones" 
-                action="action_autorizador_nivel3" 
-                groups="group_caja_autorizador_nivel3,group_caja_admin"
-                sequence="30"/>
+                  name="Nivel 3 (&gt; $2,000)" 
+                  parent="menu_ctrl_caja_autorizaciones" 
+                  action="action_autorizador_nivel3" 
+                  sequence="30"/>
 
     </data>
 </odoo>

@@ -31,6 +31,16 @@ class CtrlCajaSolicitud(models.Model):
     concepto_texto = fields.Char(string='Especificar Concepto', 
                                  invisible="not concepto_otro")
     
+    # Centro de Costos
+    centro_costo = fields.Selection([
+        ('alm', 'Almacén'),
+        ('admin', 'Administración'),
+        ('serv', 'Servicio'),
+        ('logis', 'Logística'),
+        ('planta', 'Planta'),
+        ('for', 'Foráneo')
+    ], string='Centro de Costos', tracking=True)
+    
     # Monto
     monto_estimado = fields.Monetary(string='Costo Estimado', 
                                      required=True, 
@@ -62,6 +72,7 @@ class CtrlCajaSolicitud(models.Model):
         ('autorizacion_nivel2', 'En Autorización Nivel 2'),
         ('autorizacion_nivel3', 'En Autorización Nivel 3'),
         ('autorizado', 'Autorizado'),
+        ('entregado', 'Entregado'),
         ('rechazado', 'Rechazado'),
         ('cancelado', 'Cancelado')
     ], string='Estatus', 
@@ -89,6 +100,11 @@ class CtrlCajaSolicitud(models.Model):
     autorizador_nivel3_id = fields.Many2one('res.users', string='Autorizador Nivel 3', readonly=True)
     fecha_autorizacion_nivel3 = fields.Datetime(string='Fecha Autorización N3', readonly=True)
     comentario_nivel3 = fields.Text(string='Comentarios Nivel 3')
+    
+    # Campos de Tesorería
+    tesorero_id = fields.Many2one('res.users', string='Entregado por', readonly=True)
+    fecha_entrega = fields.Datetime(string='Fecha de Entrega', readonly=True)
+    comentario_tesoreria = fields.Text(string='Comentarios Tesorería')
     
     # Información adicional
     descripcion = fields.Text(string='Descripción / Justificación')
@@ -242,6 +258,19 @@ class CtrlCajaSolicitud(models.Model):
             self.estado = 'autorizacion_nivel2'
             self.message_post(body='✅ Autorizado por Nivel 1. Pasa a autorización Nivel 2.', 
                             message_type='notification')
+        
+        # Recargar la vista actual
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': '✅ Autorizado',
+                'message': 'Solicitud autorizada exitosamente',
+                'type': 'success',
+                'sticky': False,
+                'next': {'type': 'ir.actions.act_window_close'},
+            }
+        }
     
     def action_rechazar_nivel1(self):
         """Rechaza la solicitud en Nivel 1"""
@@ -279,6 +308,19 @@ class CtrlCajaSolicitud(models.Model):
             self.estado = 'autorizacion_nivel3'
             self.message_post(body='✅ Autorizado por Nivel 2. Pasa a autorización Nivel 3.', 
                             message_type='notification')
+        
+        # Recargar la vista actual
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': '✅ Autorizado',
+                'message': 'Solicitud autorizada exitosamente',
+                'type': 'success',
+                'sticky': False,
+                'next': {'type': 'ir.actions.act_window_close'},
+            }
+        }
     
     def action_rechazar_nivel2(self):
         """Rechaza la solicitud en Nivel 2"""
@@ -308,6 +350,19 @@ class CtrlCajaSolicitud(models.Model):
         
         self.message_post(body='✅ Solicitud AUTORIZADA por Nivel 3 (autorización completa)', 
                         message_type='notification')
+        
+        # Recargar la vista actual
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': '✅ Autorizado',
+                'message': 'Solicitud autorizada exitosamente',
+                'type': 'success',
+                'sticky': False,
+                'next': {'type': 'ir.actions.act_window_close'},
+            }
+        }
     
     def action_rechazar_nivel3(self):
         """Rechaza la solicitud en Nivel 3"""
@@ -361,3 +416,37 @@ class CtrlCajaSolicitud(models.Model):
             body=f'❌ Solicitud RECHAZADA por {nivel.upper()}<br/>Motivo: {comentario}',
             message_type='notification'
         )
+    
+    # ==================== MÉTODOS DE TESORERÍA ====================
+    
+    def action_entregar_dinero(self):
+        """Registra la entrega de dinero al solicitante"""
+        self.ensure_one()
+        
+        if self.estado != 'autorizado':
+            raise UserError('Solo se puede entregar dinero a solicitudes autorizadas.')
+        
+        # Registrar entrega
+        self.write({
+            'tesorero_id': self.env.user.id,
+            'fecha_entrega': fields.Datetime.now(),
+            'estado': 'entregado',
+        })
+        
+        self.message_post(
+            body=f'💰 Dinero ENTREGADO al solicitante por {self.env.user.name}',
+            message_type='notification'
+        )
+        
+        # Cerrar y mostrar notificación
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': '💰 Entregado',
+                'message': 'Dinero entregado exitosamente',
+                'type': 'success',
+                'sticky': False,
+                'next': {'type': 'ir.actions.act_window_close'},
+            }
+        }

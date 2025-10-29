@@ -126,7 +126,7 @@
                         
                         <group>
                             <group string="Información General">
-                                <field name="fecha_solicitud" readonly="estado != 'borrador'"/>
+                                <field name="fecha_solicitud" readonly="1" force_save="1"/>
                                 <field name="responsable_id" readonly="1"/>
                                 <field name="nivel_requerido" readonly="1"/>
                             </group>
@@ -151,7 +151,8 @@
                                        readonly="estado != 'borrador'"/>
                             </group>
                             
-                            <group string="Proveedor">
+                            <group string="Clasificación">
+                                <field name="centro_costo" readonly="estado != 'borrador'"/>
                                 <field name="proveedor_otro" widget="boolean_toggle" readonly="estado != 'borrador'"/>
                                 <field name="proveedor_id" 
                                        placeholder="Seleccione un proveedor..."

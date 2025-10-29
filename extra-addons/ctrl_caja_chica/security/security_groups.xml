@@ -46,6 +46,14 @@
             <field name="comment">Puede autorizar solicitudes mayores a $2,000</field>
         </record>
 
+        <!-- Grupo: Tesorero -->
+        <record id="group_caja_tesorero" model="res.groups">
+            <field name="name">Tesorero</field>
+            <field name="category_id" ref="module_category_caja_chica"/>
+            <field name="implied_ids" eval="[(4, ref('group_caja_user'))]"/>
+            <field name="comment">Puede entregar dinero de solicitudes autorizadas</field>
+        </record>
+
         <!-- Grupo: Administrador -->
         <record id="group_caja_admin" model="res.groups">
             <field name="name">Administrador Caja Chica</field>
@@ -53,7 +61,8 @@
             <field name="implied_ids" eval="[(4, ref('group_caja_solicitante')),
                                              (4, ref('group_caja_autorizador_nivel1')),
                                              (4, ref('group_caja_autorizador_nivel2')),
-                                             (4, ref('group_caja_autorizador_nivel3'))]"/>
+                                             (4, ref('group_caja_autorizador_nivel3')),
+                                             (4, ref('group_caja_tesorero'))]"/>
             <field name="comment">Acceso completo al módulo</field>
         </record>
     </data>

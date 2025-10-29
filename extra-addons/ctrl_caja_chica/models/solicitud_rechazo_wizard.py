@@ -19,4 +19,16 @@ class CtrlCajaSolicitudRechazoWizard(models.TransientModel):
         
         self.solicitud_id.procesar_rechazo(self.nivel, self.comentario)
         
-        return {'type': 'ir.actions.act_window_close'}
+        # Regresar a la vista de autorizaciones según el nivel
+        estado_buscar = f'autorizacion_{self.nivel}'
+        nivel_num = self.nivel.replace('nivel', '')
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': f'Autorizar Nivel {nivel_num}',
+            'res_model': 'ctrl.caja.solicitud',
+            'view_mode': 'tree,form',
+            'domain': [('estado', '=', estado_buscar)],
+            'context': {},
+            'target': 'main',
+        }

@@ -1,0 +1,205 @@
+<odoo>
+    <data>
+        <!-- ============================================ -->
+        <!-- ============== TESORERÍA =================== -->
+        <!-- ============================================ -->
+
+        <!-- Vista Tree para Tesorería -->
+        <record id="view_tesoreria_tree" model="ir.ui.view">
+            <field name="name">tesoreria.solicitud.tree</field>
+            <field name="model">ctrl.caja.solicitud</field>
+            <field name="arch" type="xml">
+                <tree decoration-success="True" create="false" delete="false" edit="false">
+                    <field name="numero_solicitud"/>
+                    <field name="fecha_solicitud"/>
+                    <field name="responsable_id" string="Solicitante"/>
+                    <field name="categoria_id"/>
+                    <field name="concepto_texto" optional="show"/>
+                    <field name="centro_costo" optional="show"/>
+                    <field name="monto_estimado" sum="Total a Pagar"/>
+                    <field name="metodo_pago"/>
+                    <field name="nivel_requerido" widget="badge"/>
+                    <field name="autorizador_nivel1_id" optional="hide"/>
+                    <field name="autorizador_nivel2_id" optional="hide"/>
+                    <field name="autorizador_nivel3_id" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista Form para Tesorería -->
+        <record id="view_tesoreria_form" model="ir.ui.view">
+            <field name="name">tesoreria.solicitud.form</field>
+            <field name="model">ctrl.caja.solicitud</field>
+            <field name="arch" type="xml">
+                <form create="false" delete="false" edit="false">
+                    <header>
+                        <button name="action_entregar_dinero" 
+                                string="💰 ENTREGAR DINERO" 
+                                type="object" 
+                                class="oe_highlight btn-success"
+                                invisible="estado != 'autorizado'"
+                                confirm="¿Confirma que entregó el dinero al solicitante?"/>
+                        <field name="estado" widget="statusbar" 
+                               statusbar_visible="autorizado"/>
+                    </header>
+                    
+                    <sheet>
+                        <div class="alert alert-success" role="alert">
+                            <strong>✅ Solicitud AUTORIZADA</strong> - Lista para entrega de dinero
+                        </div>
+                        
+                        <div class="oe_title">
+                            <label for="numero_solicitud" string="Solicitud"/>
+                            <h1>
+                                <field name="numero_solicitud" readonly="1"/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group string="Información del Solicitante">
+                                <field name="responsable_id" readonly="1"/>
+                                <field name="fecha_solicitud" readonly="1"/>
+                            </group>
+                            
+                            <group string="Información de Pago">
+                                <field name="monto_estimado" readonly="1" 
+                                       class="oe_read_only" 
+                                       style="font-size: 1.8em; font-weight: bold; color: #28a745;"/>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="metodo_pago" readonly="1"/>
+                                <field name="nivel_requerido" readonly="1" widget="badge"/>
+                            </group>
+                        </group>
+                        
+                        <group>
+                            <group string="Concepto">
+                                <field name="concepto_otro" readonly="1" invisible="1"/>
+                                <field name="categoria_id" readonly="1" 
+                                       invisible="concepto_otro"
+                                       string="Concepto"/>
+                                <field name="concepto_texto" readonly="1" 
+                                       invisible="not concepto_otro"
+                                       string="Concepto (Otros)"/>
+                                <field name="centro_costo" readonly="1"/>
+                            </group>
+                            
+                            <group string="Proveedor">
+                                <field name="proveedor_otro" readonly="1" invisible="1"/>
+                                <field name="proveedor_id" readonly="1" 
+                                       invisible="proveedor_otro"/>
+                                <field name="proveedor_texto" readonly="1" 
+                                       invisible="not proveedor_otro"
+                                       string="Proveedor (Otros)"/>
+                            </group>
+                        </group>
+                        
+                        <notebook>
+                            <page string="Descripción / Justificación" name="descripcion">
+                                <group>
+                                    <field name="descripcion" readonly="1" nolabel="1" 
+                                           placeholder="Sin descripción proporcionada"/>
+                                </group>
+                            </page>
+                            
+                            <page string="Historial de Autorizaciones" name="autorizaciones">
+                                <group>
+                                    <group string="Nivel 1" invisible="not autorizador_nivel1_id">
+                                        <field name="autorizador_nivel1_id" readonly="1"/>
+                                        <field name="fecha_autorizacion_nivel1" readonly="1"/>
+                                        <field name="comentario_nivel1" readonly="1" nolabel="1"
+                                               placeholder="Sin comentarios"/>
+                                    </group>
+                                    <group string="Nivel 2" invisible="not autorizador_nivel2_id">
+                                        <field name="autorizador_nivel2_id" readonly="1"/>
+                                        <field name="fecha_autorizacion_nivel2" readonly="1"/>
+                                        <field name="comentario_nivel2" readonly="1" nolabel="1"
+                                               placeholder="Sin comentarios"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group string="Nivel 3" invisible="not autorizador_nivel3_id">
+                                        <field name="autorizador_nivel3_id" readonly="1"/>
+                                        <field name="fecha_autorizacion_nivel3" readonly="1"/>
+                                        <field name="comentario_nivel3" readonly="1" nolabel="1"
+                                               placeholder="Sin comentarios"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista Tree para Historial -->
+        <record id="view_tesoreria_historial_tree" model="ir.ui.view">
+            <field name="name">tesoreria.historial.tree</field>
+            <field name="model">ctrl.caja.solicitud</field>
+            <field name="priority">25</field>
+            <field name="arch" type="xml">
+                <tree decoration-success="True" create="false" delete="false" edit="false">
+                    <field name="numero_solicitud"/>
+                    <field name="fecha_solicitud"/>
+                    <field name="responsable_id" string="Solicitante"/>
+                    <field name="categoria_id"/>
+                    <field name="monto_estimado" sum="Total Entregado"/>
+                    <field name="metodo_pago"/>
+                    <field name="tesorero_id" string="Entregado por"/>
+                    <field name="fecha_entrega"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Acción para Tesorería - Pagos Pendientes -->
+        <record id="action_tesoreria_pagos_pendientes" model="ir.actions.act_window">
+            <field name="name">Pagos Pendientes</field>
+            <field name="res_model">ctrl.caja.solicitud</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('estado', '=', 'autorizado')]</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_tesoreria_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_tesoreria_form')})]"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay pagos pendientes
+                </p>
+                <p>
+                    Las solicitudes autorizadas que necesitan entrega de dinero aparecerán aquí.
+                </p>
+            </field>
+        </record>
+
+        <!-- Acción para Historial de Pagos (ya entregados) -->
+        <record id="action_tesoreria_historial" model="ir.actions.act_window">
+            <field name="name">Historial de Pagos</field>
+            <field name="res_model">ctrl.caja.solicitud</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('estado', '=', 'entregado')]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay pagos entregados
+                </p>
+            </field>
+        </record>
+
+        <!-- Menú de Tesorería -->
+        <menuitem id="menu_ctrl_caja_tesoreria" 
+                  name="Tesorería" 
+                  parent="menu_ctrl_caja_root" 
+                  sequence="15"/>
+        
+        <menuitem id="menu_tesoreria_pagos_pendientes" 
+                  name="Pagos Pendientes" 
+                  parent="menu_ctrl_caja_tesoreria" 
+                  action="action_tesoreria_pagos_pendientes"
+                  groups="ctrl_caja_chica.group_caja_tesorero,ctrl_caja_chica.group_caja_admin"
+                  sequence="10"/>
+        
+        <menuitem id="menu_tesoreria_historial" 
+                  name="Historial de Pagos" 
+                  parent="menu_ctrl_caja_tesoreria" 
+                  action="action_tesoreria_historial"
+                  groups="ctrl_caja_chica.group_caja_tesorero,ctrl_caja_chica.group_caja_admin"
+                  sequence="20"/>
+    </data>
+</odoo>
