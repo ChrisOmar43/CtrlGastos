@@ -10,10 +10,10 @@
     "data": [
         "security/security_groups.xml",
         "security/ir.model.access.csv",
+        "views/caja_chica_views.xml",
         "views/solicitud_views.xml",
         "views/autorizador_views.xml",
         "views/tesoreria_views.xml",
-        "views/caja_chica_views.xml",
         "views/arqueo_views.xml",
         "views/parametros_views.xml"
     ],
