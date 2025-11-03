@@ -15,7 +15,7 @@
                     <field name="responsable_id" string="Solicitante"/>
                     <field name="categoria_id"/>
                     <field name="concepto_texto" optional="show"/>
-                    <field name="centro_costo" optional="show"/>
+                    <field name="centro_costo_id" optional="show"/>
                     <field name="monto_estimado" sum="Total a Pagar"/>
                     <field name="metodo_pago"/>
                     <field name="nivel_requerido" widget="badge"/>
@@ -80,7 +80,7 @@
                                 <field name="concepto_texto" readonly="1" 
                                        invisible="not concepto_otro"
                                        string="Concepto (Otros)"/>
-                                <field name="centro_costo" readonly="1"/>
+                                <field name="centro_costo_id" readonly="1"/>
                             </group>
                             
                             <group string="Proveedor">

@@ -1,0 +1,112 @@
+<odoo>
+    <data>
+        <!-- ============================================ -->
+        <!-- ============== CONCEPTOS =================== -->
+        <!-- ============================================ -->
+        
+        <!-- Vista Tree Conceptos -->
+        <record id="view_ctrl_caja_concepto_tree" model="ir.ui.view">
+            <field name="name">ctrl.caja.concepto.tree</field>
+            <field name="model">ctrl.caja.concepto</field>
+            <field name="arch" type="xml">
+                <tree decoration-muted="not activo" sample="1">
+                    <field name="name"/>
+                    <field name="codigo" optional="show"/>
+                    <field name="cantidad_solicitudes"/>
+                    <field name="monto_total" sum="Total"/>
+                    <field name="activo" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista Form Conceptos -->
+        <record id="view_ctrl_caja_concepto_form" model="ir.ui.view">
+            <field name="name">ctrl.caja.concepto.form</field>
+            <field name="model">ctrl.caja.concepto</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="activo" widget="boolean_button" 
+                               options="{'terminology': {'string_true': 'Activo', 'string_false': 'Inactivo'}}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_solicitudes" 
+                                    type="object" 
+                                    class="oe_stat_button" 
+                                    icon="fa-file-text">
+                                <field name="cantidad_solicitudes" widget="statinfo" 
+                                       string="Solicitudes"/>
+                            </button>
+                        </div>
+                        
+                        <div class="oe_title">
+                            <label for="name" string="Concepto"/>
+                            <h1>
+                                <field name="name" placeholder="ej: Papelería, Gasolina, Mantenimiento..."/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group>
+                                <field name="codigo" placeholder="ej: PAP, GAS, MAN..."/>
+                            </group>
+                            <group>
+                                <field name="monto_total" widget="monetary"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </group>
+                        
+                        <group>
+                            <field name="descripcion" placeholder="Descripción detallada del concepto..."/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista Search Conceptos -->
+        <record id="view_ctrl_caja_concepto_search" model="ir.ui.view">
+            <field name="name">ctrl.caja.concepto.search</field>
+            <field name="model">ctrl.caja.concepto</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="codigo"/>
+                    <separator/>
+                    <filter string="Activos" name="activos" domain="[('activo', '=', True)]"/>
+                    <filter string="Inactivos" name="inactivos" domain="[('activo', '=', False)]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción Conceptos -->
+        <record id="action_ctrl_caja_concepto" model="ir.actions.act_window">
+            <field name="name">Conceptos de Gasto</field>
+            <field name="res_model">ctrl.caja.concepto</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_activos': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crear un nuevo concepto de gasto
+                </p>
+                <p>
+                    Define los conceptos que se pueden usar en las solicitudes de compra.
+                    Ejemplos: Papelería, Gasolina, Mantenimiento, Limpieza, etc.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menú Conceptos -->
+        <menuitem id="menu_ctrl_caja_conceptos" 
+                  name="Conceptos" 
+                  parent="menu_ctrl_caja_configuracion" 
+                  action="action_ctrl_caja_concepto" 
+                  sequence="10"/>
+
+    </data>
+</odoo>

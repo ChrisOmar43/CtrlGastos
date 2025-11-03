@@ -1,0 +1,15 @@
+<odoo>
+    <data>
+        <!-- ============================================ -->
+        <!-- ========== MENÚ CONFIGURACIÓN ============== -->
+        <!-- ============================================ -->
+        
+        <!-- Menú principal de Configuración -->
+        <!-- IMPORTANTE: Este debe cargarse ANTES que los otros 3 archivos -->
+        <menuitem id="menu_ctrl_caja_configuracion" 
+                  name="Configuración" 
+                  parent="menu_ctrl_caja_root" 
+                  sequence="90"/>
+
+    </data>
+</odoo>

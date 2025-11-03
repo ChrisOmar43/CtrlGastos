@@ -1,205 +1,357 @@
 <odoo>
     <data>
-        <!-- Acción principal -->
-        <record id="action_ctrl_caja_param" model="ir.actions.act_window">
-            <field name="name">Parámetros de Caja</field>
-            <field name="res_model">ctrl.caja.param</field>
-            <field name="view_mode">tree,kanban,form</field>
-            <field name="context">{'search_default_activos': 1}</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
-                    Crear un nuevo parámetro de caja
-                </p>
-                <p>
-                    Los parámetros definen los tipos de gastos que se pueden registrar,
-                    asociándolos a centros de costo y periodicidad.
-                </p>
-            </field>
-        </record>
-
-        <!-- Vista Tree -->
-        <record id="view_ctrl_caja_param_tree" model="ir.ui.view">
-            <field name="name">ctrl.caja.param.tree</field>
-            <field name="model">ctrl.caja.param</field>
+        <!-- ============================================ -->
+        <!-- ============== CONCEPTOS =================== -->
+        <!-- ============================================ -->
+        
+        <!-- Vista Tree Conceptos -->
+        <record id="view_ctrl_caja_concepto_tree" model="ir.ui.view">
+            <field name="name">ctrl.caja.concepto.tree</field>
+            <field name="model">ctrl.caja.concepto</field>
             <field name="arch" type="xml">
-                <tree decoration-muted="not activo">
-                    <field name="tipo" widget="badge" 
-                           decoration-info="tipo == 'caja_chica'"
-                           decoration-success="tipo == 'fijo'"
-                           decoration-warning="tipo == 'variable'"/>
-                    <field name="concepto"/>
-                    <field name="centro_costo"/>
-                    <field name="periodicidad"/>
-                    <field name="monto_estimado" optional="show" sum="Total Estimado"/>
+                <tree decoration-muted="not activo" sample="1">
+                    <field name="name"/>
+                    <field name="codigo" optional="show"/>
+                    <field name="cantidad_solicitudes"/>
+                    <field name="monto_total" sum="Total"/>
                     <field name="activo" widget="boolean_toggle"/>
                 </tree>
             </field>
         </record>
 
-        <!-- Vista Form -->
-        <record id="view_ctrl_caja_param_form" model="ir.ui.view">
-            <field name="name">ctrl.caja.param.form</field>
-            <field name="model">ctrl.caja.param</field>
+        <!-- Vista Form Conceptos -->
+        <record id="view_ctrl_caja_concepto_form" model="ir.ui.view">
+            <field name="name">ctrl.caja.concepto.form</field>
+            <field name="model">ctrl.caja.concepto</field>
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <button name="toggle_active" 
-                                string="Archivar" 
-                                type="object" 
-                                class="oe_highlight"
-                                invisible="not activo"/>
-                        <button name="toggle_active" 
-                                string="Desarchivar" 
-                                type="object" 
-                                class="oe_highlight"
-                                invisible="activo"/>
+                        <field name="activo" widget="boolean_button" 
+                               options="{'terminology': {'string_true': 'Activo', 'string_false': 'Inactivo'}}"/>
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
-                            <button name="action_view_movimientos" 
+                            <button name="action_view_solicitudes" 
                                     type="object" 
                                     class="oe_stat_button" 
-                                    icon="fa-list">
-                                <div class="o_stat_info">
-                                    <span class="o_stat_text">Ver</span>
-                                    <span class="o_stat_text">Movimientos</span>
-                                </div>
+                                    icon="fa-file-text">
+                                <field name="cantidad_solicitudes" widget="statinfo" 
+                                       string="Solicitudes"/>
                             </button>
                         </div>
                         
-                        <widget name="web_ribbon" title="Archivado" 
-                                bg_color="text-bg-danger" 
-                                invisible="activo"/>
-                        
                         <div class="oe_title">
+                            <label for="name" string="Concepto"/>
                             <h1>
-                                <field name="name" readonly="1"/>
+                                <field name="name" placeholder="ej: Papelería, Gasolina, Mantenimiento..."/>
                             </h1>
                         </div>
                         
                         <group>
-                            <group string="Clasificación">
-                                <field name="tipo" widget="radio"/>
-                                <field name="concepto" placeholder="ej: Papelería, Combustible, Mantenimiento..."/>
-                                <field name="centro_costo"/>
+                            <group>
+                                <field name="codigo" placeholder="ej: PAP, GAS, MAN..."/>
                             </group>
-                            <group string="Información Adicional">
-                                <field name="periodicidad"/>
-                                <field name="monto_estimado"/>
+                            <group>
+                                <field name="monto_total" widget="monetary"/>
                                 <field name="currency_id" invisible="1"/>
-                                <field name="activo" widget="boolean_toggle"/>
                             </group>
                         </group>
                         
-                        <group string="Notas">
-                            <field name="notas" nolabel="1" 
-                                   placeholder="Agregue notas o descripción adicional sobre este parámetro..."/>
+                        <group>
+                            <field name="descripcion" placeholder="Descripción detallada del concepto..."/>
                         </group>
                     </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
                 </form>
             </field>
         </record>
 
-        <!-- Vista Search con filtros -->
-        <record id="view_ctrl_caja_param_search" model="ir.ui.view">
-            <field name="name">ctrl.caja.param.search</field>
-            <field name="model">ctrl.caja.param</field>
+        <!-- Vista Search Conceptos -->
+        <record id="view_ctrl_caja_concepto_search" model="ir.ui.view">
+            <field name="name">ctrl.caja.concepto.search</field>
+            <field name="model">ctrl.caja.concepto</field>
             <field name="arch" type="xml">
                 <search>
-                    <field name="concepto"/>
-                    <field name="name" string="Búsqueda General" 
-                           filter_domain="['|', '|', ('concepto', 'ilike', self), ('tipo', 'ilike', self), ('centro_costo', 'ilike', self)]"/>
-                    
+                    <field name="name"/>
+                    <field name="codigo"/>
                     <separator/>
-                    <filter string="Activos" name="activos" 
-                            domain="[('activo', '=', True)]"/>
-                    <filter string="Archivados" name="archivados" 
-                            domain="[('activo', '=', False)]"/>
-                    
+                    <filter string="Activos" name="activos" domain="[('activo', '=', True)]"/>
+                    <filter string="Inactivos" name="inactivos" domain="[('activo', '=', False)]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción Conceptos -->
+        <record id="action_ctrl_caja_concepto" model="ir.actions.act_window">
+            <field name="name">Conceptos de Gasto</field>
+            <field name="res_model">ctrl.caja.concepto</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_activos': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crear un nuevo concepto de gasto
+                </p>
+                <p>
+                    Define los conceptos que se pueden usar en las solicitudes de compra.
+                    Ejemplos: Papelería, Gasolina, Mantenimiento, Limpieza, etc.
+                </p>
+            </field>
+        </record>
+
+        <!-- ============================================ -->
+        <!-- ========== CENTROS DE COSTO ================ -->
+        <!-- ============================================ -->
+        
+        <!-- Vista Tree Centros de Costo -->
+        <record id="view_ctrl_caja_centro_costo_tree" model="ir.ui.view">
+            <field name="name">ctrl.caja.centro.costo.tree</field>
+            <field name="model">ctrl.caja.centro.costo</field>
+            <field name="arch" type="xml">
+                <tree decoration-muted="not activo" sample="1">
+                    <field name="codigo"/>
+                    <field name="name"/>
+                    <field name="responsable_id" optional="show"/>
+                    <field name="cantidad_solicitudes"/>
+                    <field name="monto_total" sum="Total"/>
+                    <field name="activo" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista Form Centros de Costo -->
+        <record id="view_ctrl_caja_centro_costo_form" model="ir.ui.view">
+            <field name="name">ctrl.caja.centro.costo.form</field>
+            <field name="model">ctrl.caja.centro.costo</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="activo" widget="boolean_button" 
+                               options="{'terminology': {'string_true': 'Activo', 'string_false': 'Inactivo'}}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_solicitudes" 
+                                    type="object" 
+                                    class="oe_stat_button" 
+                                    icon="fa-building">
+                                <field name="cantidad_solicitudes" widget="statinfo" 
+                                       string="Solicitudes"/>
+                            </button>
+                        </div>
+                        
+                        <div class="oe_title">
+                            <label for="name" string="Centro de Costo"/>
+                            <h1>
+                                <field name="name" placeholder="ej: Almacén, Administración, Servicio..."/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group>
+                                <field name="codigo" placeholder="ej: ALM, ADMIN, SERV..." 
+                                       style="text-transform: uppercase;"/>
+                                <field name="responsable_id"/>
+                            </group>
+                            <group>
+                                <field name="monto_total" widget="monetary"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </group>
+                        
+                        <group>
+                            <field name="descripcion" placeholder="Descripción del centro de costo..."/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista Search Centros de Costo -->
+        <record id="view_ctrl_caja_centro_costo_search" model="ir.ui.view">
+            <field name="name">ctrl.caja.centro.costo.search</field>
+            <field name="model">ctrl.caja.centro.costo</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="codigo"/>
+                    <field name="responsable_id"/>
                     <separator/>
-                    <filter string="Caja Chica" name="caja_chica" 
-                            domain="[('tipo', '=', 'caja_chica')]"/>
-                    <filter string="Gastos Fijos" name="fijos" 
-                            domain="[('tipo', '=', 'fijo')]"/>
-                    <filter string="Gastos Variables" name="variables" 
-                            domain="[('tipo', '=', 'variable')]"/>
-                    
-                    <separator/>
-                    <filter string="Almacén" name="alm" 
-                            domain="[('centro_costo', '=', 'alm')]"/>
-                    <filter string="Administración" name="admin" 
-                            domain="[('centro_costo', '=', 'admin')]"/>
-                    <filter string="Servicio" name="serv" 
-                            domain="[('centro_costo', '=', 'serv')]"/>
-                    <filter string="Logística" name="logis" 
-                            domain="[('centro_costo', '=', 'logis')]"/>
-                    <filter string="Planta" name="planta" 
-                            domain="[('centro_costo', '=', 'planta')]"/>
-                    <filter string="Foráneo" name="for" 
-                            domain="[('centro_costo', '=', 'for')]"/>
-                    
+                    <filter string="Activos" name="activos" domain="[('activo', '=', True)]"/>
+                    <filter string="Inactivos" name="inactivos" domain="[('activo', '=', False)]"/>
                     <group expand="0" string="Agrupar por">
-                        <filter string="Tipo" name="group_by_tipo" 
-                                context="{'group_by': 'tipo'}"/>
-                        <filter string="Centro de Costo" name="group_by_centro" 
-                                context="{'group_by': 'centro_costo'}"/>
-                        <filter string="Periodicidad" name="group_by_periodicidad" 
-                                context="{'group_by': 'periodicidad'}"/>
+                        <filter string="Responsable" name="group_by_responsable" 
+                                context="{'group_by': 'responsable_id'}"/>
                     </group>
                 </search>
             </field>
         </record>
 
-        <!-- Vista Kanban -->
-        <record id="view_ctrl_caja_param_kanban" model="ir.ui.view">
-            <field name="name">ctrl.caja.param.kanban</field>
-            <field name="model">ctrl.caja.param</field>
-            <field name="arch" type="xml">
-                <kanban class="o_kanban_mobile">
-                    <field name="tipo"/>
-                    <field name="concepto"/>
-                    <field name="centro_costo"/>
-                    <field name="periodicidad"/>
-                    <field name="monto_estimado"/>
-                    <field name="activo"/>
-                    
-                    <templates>
-                        <t t-name="kanban-box">
-                            <div class="oe_kanban_global_click">
-                                <div class="o_kanban_record_top">
-                                    <div class="o_kanban_record_headings">
-                                        <strong class="o_kanban_record_title">
-                                            <field name="concepto"/>
-                                        </strong>
-                                    </div>
-                                    <span class="float-end badge" 
-                                          t-attf-class="text-bg-#{tipo == 'fijo' ? 'success' : tipo == 'variable' ? 'warning' : 'info'}">
-                                        <field name="tipo"/>
-                                    </span>
-                                </div>
-                                <div class="o_kanban_record_body">
-                                    <field name="centro_costo" widget="badge"/>
-                                    <t t-if="record.periodicidad.raw_value">
-                                        <br/>
-                                        <i class="fa fa-clock-o"/> <field name="periodicidad"/>
-                                    </t>
-                                    <t t-if="record.monto_estimado.raw_value">
-                                        <br/>
-                                        <i class="fa fa-money"/> <field name="monto_estimado"/>
-                                    </t>
-                                </div>
-                            </div>
-                        </t>
-                    </templates>
-                </kanban>
+        <!-- Acción Centros de Costo -->
+        <record id="action_ctrl_caja_centro_costo" model="ir.actions.act_window">
+            <field name="name">Centros de Costo</field>
+            <field name="res_model">ctrl.caja.centro.costo</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_activos': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crear un nuevo centro de costo
+                </p>
+                <p>
+                    Define los centros de costo de tu empresa.
+                    Ejemplos: Almacén, Administración, Servicio, Logística, Planta, etc.
+                </p>
             </field>
         </record>
 
-        <!-- Menú -->
-        <menuitem id="menu_ctrl_caja_param" 
-                  name="Parámetros" 
+        <!-- ============================================ -->
+        <!-- ============== PROVEEDORES ================= -->
+        <!-- ============================================ -->
+        
+        <!-- Vista Tree Proveedores -->
+        <record id="view_ctrl_caja_proveedor_tree" model="ir.ui.view">
+            <field name="name">ctrl.caja.proveedor.tree</field>
+            <field name="model">ctrl.caja.proveedor</field>
+            <field name="arch" type="xml">
+                <tree decoration-muted="not activo" sample="1">
+                    <field name="name"/>
+                    <field name="codigo" optional="show"/>
+                    <field name="telefono" optional="show"/>
+                    <field name="contacto" optional="show"/>
+                    <field name="cantidad_solicitudes"/>
+                    <field name="monto_total" sum="Total Comprado"/>
+                    <field name="activo" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista Form Proveedores -->
+        <record id="view_ctrl_caja_proveedor_form" model="ir.ui.view">
+            <field name="name">ctrl.caja.proveedor.form</field>
+            <field name="model">ctrl.caja.proveedor</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="activo" widget="boolean_button" 
+                               options="{'terminology': {'string_true': 'Activo', 'string_false': 'Inactivo'}}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_solicitudes" 
+                                    type="object" 
+                                    class="oe_stat_button" 
+                                    icon="fa-shopping-cart">
+                                <field name="cantidad_solicitudes" widget="statinfo" 
+                                       string="Compras"/>
+                            </button>
+                        </div>
+                        
+                        <div class="oe_title">
+                            <label for="name" string="Proveedor"/>
+                            <h1>
+                                <field name="name" placeholder="Nombre del proveedor..."/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group string="Información General">
+                                <field name="codigo" placeholder="RFC o código..."/>
+                                <field name="telefono" placeholder="+52 (xxx) xxx-xxxx"/>
+                                <field name="email" widget="email" placeholder="email@proveedor.com"/>
+                            </group>
+                            <group string="Contacto">
+                                <field name="contacto" placeholder="Nombre del contacto..."/>
+                                <field name="monto_total" widget="monetary"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </group>
+                        
+                        <group>
+                            <field name="direccion" placeholder="Dirección completa..."/>
+                        </group>
+                        
+                        <group>
+                            <field name="notas" placeholder="Notas adicionales sobre el proveedor..."/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista Search Proveedores -->
+        <record id="view_ctrl_caja_proveedor_search" model="ir.ui.view">
+            <field name="name">ctrl.caja.proveedor.search</field>
+            <field name="model">ctrl.caja.proveedor</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="codigo"/>
+                    <field name="telefono"/>
+                    <field name="email"/>
+                    <separator/>
+                    <filter string="Activos" name="activos" domain="[('activo', '=', True)]"/>
+                    <filter string="Inactivos" name="inactivos" domain="[('activo', '=', False)]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción Proveedores -->
+        <record id="action_ctrl_caja_proveedor" model="ir.actions.act_window">
+            <field name="name">Proveedores</field>
+            <field name="res_model">ctrl.caja.proveedor</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_activos': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Agregar un nuevo proveedor
+                </p>
+                <p>
+                    Registra los proveedores de tu empresa para facilitar
+                    la selección en las solicitudes de compra.
+                </p>
+            </field>
+        </record>
+
+        <!-- ============================================ -->
+        <!-- ================ MENÚS ===================== -->
+        <!-- ============================================ -->
+        
+        <!-- Menú principal de Configuración -->
+        <menuitem id="menu_ctrl_caja_configuracion" 
+                  name="Configuración" 
                   parent="menu_ctrl_caja_root" 
-                  action="action_ctrl_caja_param" 
+                  sequence="90"/>
+        
+        <!-- Submenú Conceptos -->
+        <menuitem id="menu_ctrl_caja_conceptos" 
+                  name="Conceptos" 
+                  parent="menu_ctrl_caja_configuracion" 
+                  action="action_ctrl_caja_concepto" 
+                  sequence="10"/>
+        
+        <!-- Submenú Centros de Costo -->
+        <menuitem id="menu_ctrl_caja_centros_costo" 
+                  name="Centros de Costo" 
+                  parent="menu_ctrl_caja_configuracion" 
+                  action="action_ctrl_caja_centro_costo" 
+                  sequence="20"/>
+        
+        <!-- Submenú Proveedores -->
+        <menuitem id="menu_ctrl_caja_proveedores" 
+                  name="Proveedores" 
+                  parent="menu_ctrl_caja_configuracion" 
+                  action="action_ctrl_caja_proveedor" 
                   sequence="30"/>
+
     </data>
 </odoo>

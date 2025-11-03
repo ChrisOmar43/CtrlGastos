@@ -1,0 +1,123 @@
+<odoo>
+    <data>
+        <!-- ============================================ -->
+        <!-- ============== PROVEEDORES ================= -->
+        <!-- ============================================ -->
+        
+        <!-- Vista Tree Proveedores -->
+        <record id="view_ctrl_caja_proveedor_tree" model="ir.ui.view">
+            <field name="name">ctrl.caja.proveedor.tree</field>
+            <field name="model">ctrl.caja.proveedor</field>
+            <field name="arch" type="xml">
+                <tree decoration-muted="not activo" sample="1">
+                    <field name="name"/>
+                    <field name="codigo" optional="show"/>
+                    <field name="telefono" optional="show"/>
+                    <field name="contacto" optional="show"/>
+                    <field name="cantidad_solicitudes"/>
+                    <field name="monto_total" sum="Total Comprado"/>
+                    <field name="activo" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista Form Proveedores -->
+        <record id="view_ctrl_caja_proveedor_form" model="ir.ui.view">
+            <field name="name">ctrl.caja.proveedor.form</field>
+            <field name="model">ctrl.caja.proveedor</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="activo" widget="boolean_button" 
+                               options="{'terminology': {'string_true': 'Activo', 'string_false': 'Inactivo'}}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_solicitudes" 
+                                    type="object" 
+                                    class="oe_stat_button" 
+                                    icon="fa-shopping-cart">
+                                <field name="cantidad_solicitudes" widget="statinfo" 
+                                       string="Compras"/>
+                            </button>
+                        </div>
+                        
+                        <div class="oe_title">
+                            <label for="name" string="Proveedor"/>
+                            <h1>
+                                <field name="name" placeholder="Nombre del proveedor..."/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group string="Información General">
+                                <field name="codigo" placeholder="RFC o código..."/>
+                                <field name="telefono" placeholder="+52 (xxx) xxx-xxxx"/>
+                                <field name="email" widget="email" placeholder="email@proveedor.com"/>
+                            </group>
+                            <group string="Contacto">
+                                <field name="contacto" placeholder="Nombre del contacto..."/>
+                                <field name="monto_total" widget="monetary"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </group>
+                        
+                        <group>
+                            <field name="direccion" placeholder="Dirección completa..."/>
+                        </group>
+                        
+                        <group>
+                            <field name="notas" placeholder="Notas adicionales sobre el proveedor..."/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista Search Proveedores -->
+        <record id="view_ctrl_caja_proveedor_search" model="ir.ui.view">
+            <field name="name">ctrl.caja.proveedor.search</field>
+            <field name="model">ctrl.caja.proveedor</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="codigo"/>
+                    <field name="telefono"/>
+                    <field name="email"/>
+                    <separator/>
+                    <filter string="Activos" name="activos" domain="[('activo', '=', True)]"/>
+                    <filter string="Inactivos" name="inactivos" domain="[('activo', '=', False)]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción Proveedores -->
+        <record id="action_ctrl_caja_proveedor" model="ir.actions.act_window">
+            <field name="name">Proveedores</field>
+            <field name="res_model">ctrl.caja.proveedor</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_activos': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Agregar un nuevo proveedor
+                </p>
+                <p>
+                    Registra los proveedores de tu empresa para facilitar
+                    la selección en las solicitudes de compra.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menú Proveedores -->
+        <menuitem id="menu_ctrl_caja_proveedores" 
+                  name="Proveedores" 
+                  parent="menu_ctrl_caja_configuracion" 
+                  action="action_ctrl_caja_proveedor" 
+                  sequence="30"/>
+
+    </data>
+</odoo>

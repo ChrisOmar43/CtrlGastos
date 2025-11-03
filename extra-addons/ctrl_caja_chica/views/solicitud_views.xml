@@ -10,30 +10,6 @@
             <field name="number_increment">1</field>
         </record>
 
-        <!-- Acción principal (solo muestra mis solicitudes) -->
-        <record id="action_caja_solicitud" model="ir.actions.act_window">
-            <field name="name">Mis Solicitudes</field>
-            <field name="res_model">ctrl.caja.solicitud</field>
-            <field name="view_mode">tree,form</field>
-            <field name="domain">[]</field>
-            <field name="view_ids" eval="[(5, 0, 0),
-                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_caja_solicitud_tree')}),
-                (0, 0, {'view_mode': 'form', 'view_id': ref('view_caja_solicitud_form')})]"/>
-            <field name="context">{
-                'default_responsable_id': uid,
-                'search_default_mis_solicitudes': 1
-            }</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
-                    Crear una nueva solicitud de compra
-                </p>
-                <p>
-                    Registre aquí sus solicitudes de compra. Serán enviadas automáticamente
-                    al nivel de autorización correspondiente según el monto.
-                </p>
-            </field>
-        </record>
-
         <!-- Vista Tree -->
         <record id="view_caja_solicitud_tree" model="ir.ui.view">
             <field name="name">ctrl.caja.solicitud.tree</field>
@@ -44,16 +20,12 @@
                       decoration-info="estado == 'borrador'"
                       decoration-warning="estado in ['solicitado', 'autorizacion_nivel1', 'autorizacion_nivel2', 'autorizacion_nivel3']"
                       sample="1">
-                    <header>
-                        <button name="action_crear_solicitud" 
-                                string="➕ Nueva Solicitud" 
-                                type="object" 
-                                class="btn-primary"/>
-                    </header>
                     <field name="numero_solicitud"/>
                     <field name="fecha_solicitud"/>
                     <field name="categoria_id"/>
                     <field name="concepto_texto" optional="hide"/>
+                    <field name="centro_costo_id" optional="show"/>
+                    <field name="proveedor_id" optional="show"/>
                     <field name="monto_estimado" sum="Total"/>
                     <field name="nivel_requerido"/>
                     <field name="metodo_pago" optional="hide"/>
@@ -152,7 +124,7 @@
                             </group>
                             
                             <group string="Clasificación">
-                                <field name="centro_costo" readonly="estado != 'borrador'"/>
+                                <field name="centro_costo_id" readonly="estado != 'borrador'"/>
                                 <field name="proveedor_otro" widget="boolean_toggle" readonly="estado != 'borrador'"/>
                                 <field name="proveedor_id" 
                                        placeholder="Seleccione un proveedor..."
@@ -219,6 +191,8 @@
                     <field name="numero_solicitud"/>
                     <field name="categoria_id"/>
                     <field name="concepto_texto"/>
+                    <field name="centro_costo_id"/>
+                    <field name="proveedor_id"/>
                     
                     <filter string="Mis Solicitudes" name="mis_solicitudes" 
                             domain="[('responsable_id', '=', uid)]"/>
@@ -243,10 +217,36 @@
                                 context="{'group_by': 'estado'}"/>
                         <filter string="Nivel de Autorización" name="group_by_nivel" 
                                 context="{'group_by': 'nivel_requerido'}"/>
+                        <filter string="Centro de Costo" name="group_by_centro" 
+                                context="{'group_by': 'centro_costo_id'}"/>
                         <filter string="Fecha" name="group_by_fecha" 
                                 context="{'group_by': 'fecha_solicitud'}"/>
                     </group>
                 </search>
+            </field>
+        </record>
+
+        <!-- Acción principal (solo muestra mis solicitudes) -->
+        <record id="action_caja_solicitud" model="ir.actions.act_window">
+            <field name="name">Mis Solicitudes</field>
+            <field name="res_model">ctrl.caja.solicitud</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_caja_solicitud_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_caja_solicitud_form')})]"/>
+            <field name="context">{
+                'default_responsable_id': uid,
+                'search_default_mis_solicitudes': 1
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crear una nueva solicitud de compra
+                </p>
+                <p>
+                    Registre aquí sus solicitudes de compra. Serán enviadas automáticamente
+                    al nivel de autorización correspondiente según el monto.
+                </p>
             </field>
         </record>
 

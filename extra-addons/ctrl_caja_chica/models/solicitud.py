@@ -24,22 +24,18 @@ class CtrlCajaSolicitud(models.Model):
                                      tracking=True)
     
     # Concepto con opción "Otros"
-    categoria_id = fields.Many2one('ctrl.caja.param', 
+    categoria_id = fields.Many2one('ctrl.caja.concepto',  # CAMBIO: usar nuevo modelo
                                    string='Concepto',
-                                   domain=[('activo', '=', True)])
+                                   domain=[('activo', '=', True)],
+                                   tracking=True)
     concepto_otro = fields.Boolean(string='Concepto: Otros', default=False)
-    concepto_texto = fields.Char(string='Especificar Concepto', 
-                                 invisible="not concepto_otro")
+    concepto_texto = fields.Char(string='Especificar Concepto')
     
     # Centro de Costos
-    centro_costo = fields.Selection([
-        ('alm', 'Almacén'),
-        ('admin', 'Administración'),
-        ('serv', 'Servicio'),
-        ('logis', 'Logística'),
-        ('planta', 'Planta'),
-        ('for', 'Foráneo')
-    ], string='Centro de Costos', tracking=True)
+    centro_costo_id = fields.Many2one('ctrl.caja.centro.costo',  # CAMBIO: usar nuevo modelo
+                                      string='Centro de Costos',
+                                      domain=[('activo', '=', True)],
+                                      tracking=True)
     
     # Monto
     monto_estimado = fields.Monetary(string='Costo Estimado', 
@@ -59,10 +55,12 @@ class CtrlCajaSolicitud(models.Model):
     ], string='Forma de Pago', required=True, tracking=True)
     
     # Proveedor con opción "Otros"
-    proveedor_id = fields.Many2one('res.partner', string='Proveedor')
+    proveedor_id = fields.Many2one('ctrl.caja.proveedor',  # CAMBIO: usar nuevo modelo
+                                   string='Proveedor',
+                                   domain=[('activo', '=', True)],
+                                   tracking=True)
     proveedor_otro = fields.Boolean(string='Proveedor: Otros', default=False)
-    proveedor_texto = fields.Char(string='Especificar Proveedor',
-                                  invisible="not proveedor_otro")
+    proveedor_texto = fields.Char(string='Especificar Proveedor')
     
     # Estado de la solicitud
     estado = fields.Selection([
@@ -197,39 +195,25 @@ class CtrlCajaSolicitud(models.Model):
         self.fecha_autorizacion_nivel2 = False
         self.autorizador_nivel3_id = False
         self.fecha_autorizacion_nivel3 = False
-    
-    @api.constrains('monto_estimado')
-    def _check_monto(self):
-        for rec in self:
-            if rec.monto_estimado < 0:
-                raise ValidationError('El monto no puede ser negativo.')
+        self.comentario_nivel1 = False
+        self.comentario_nivel2 = False
+        self.comentario_nivel3 = False
+        
+        self.message_post(body='Solicitud regresada a borrador.', message_type='notification')
     
     def action_view_movimiento(self):
         """Abre el movimiento de caja relacionado"""
         self.ensure_one()
         if not self.movimiento_id:
-            return False
+            raise UserError('Esta solicitud no tiene un movimiento de caja asociado.')
         
         return {
+            'type': 'ir.actions.act_window',
             'name': 'Movimiento de Caja',
-            'type': 'ir.actions.act_window',
             'res_model': 'ctrl.caja.chica',
-            'view_mode': 'form',
             'res_id': self.movimiento_id.id,
-            'target': 'current',
-        }
-    
-    def action_crear_solicitud(self):
-        """Abre el formulario para crear una nueva solicitud"""
-        return {
-            'name': 'Nueva Solicitud',
-            'type': 'ir.actions.act_window',
-            'res_model': 'ctrl.caja.solicitud',
             'view_mode': 'form',
             'target': 'current',
-            'context': {
-                'default_responsable_id': self.env.user.id,
-            }
         }
     
     # ==================== MÉTODOS DE AUTORIZACIÓN ====================

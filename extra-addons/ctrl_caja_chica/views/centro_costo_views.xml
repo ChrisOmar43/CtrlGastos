@@ -1,0 +1,120 @@
+<odoo>
+    <data>
+        <!-- ============================================ -->
+        <!-- ========== CENTROS DE COSTO ================ -->
+        <!-- ============================================ -->
+        
+        <!-- Vista Tree Centros de Costo -->
+        <record id="view_ctrl_caja_centro_costo_tree" model="ir.ui.view">
+            <field name="name">ctrl.caja.centro.costo.tree</field>
+            <field name="model">ctrl.caja.centro.costo</field>
+            <field name="arch" type="xml">
+                <tree decoration-muted="not activo" sample="1">
+                    <field name="codigo"/>
+                    <field name="name"/>
+                    <field name="responsable_id" optional="show"/>
+                    <field name="cantidad_solicitudes"/>
+                    <field name="monto_total" sum="Total"/>
+                    <field name="activo" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista Form Centros de Costo -->
+        <record id="view_ctrl_caja_centro_costo_form" model="ir.ui.view">
+            <field name="name">ctrl.caja.centro.costo.form</field>
+            <field name="model">ctrl.caja.centro.costo</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="activo" widget="boolean_button" 
+                               options="{'terminology': {'string_true': 'Activo', 'string_false': 'Inactivo'}}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_solicitudes" 
+                                    type="object" 
+                                    class="oe_stat_button" 
+                                    icon="fa-building">
+                                <field name="cantidad_solicitudes" widget="statinfo" 
+                                       string="Solicitudes"/>
+                            </button>
+                        </div>
+                        
+                        <div class="oe_title">
+                            <label for="name" string="Centro de Costo"/>
+                            <h1>
+                                <field name="name" placeholder="ej: Almacén, Administración, Servicio..."/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group>
+                                <field name="codigo" placeholder="ej: ALM, ADMIN, SERV..." 
+                                       style="text-transform: uppercase;"/>
+                                <field name="responsable_id"/>
+                            </group>
+                            <group>
+                                <field name="monto_total" widget="monetary"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </group>
+                        
+                        <group>
+                            <field name="descripcion" placeholder="Descripción del centro de costo..."/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista Search Centros de Costo -->
+        <record id="view_ctrl_caja_centro_costo_search" model="ir.ui.view">
+            <field name="name">ctrl.caja.centro.costo.search</field>
+            <field name="model">ctrl.caja.centro.costo</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="codigo"/>
+                    <field name="responsable_id"/>
+                    <separator/>
+                    <filter string="Activos" name="activos" domain="[('activo', '=', True)]"/>
+                    <filter string="Inactivos" name="inactivos" domain="[('activo', '=', False)]"/>
+                    <group expand="0" string="Agrupar por">
+                        <filter string="Responsable" name="group_by_responsable" 
+                                context="{'group_by': 'responsable_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción Centros de Costo -->
+        <record id="action_ctrl_caja_centro_costo" model="ir.actions.act_window">
+            <field name="name">Centros de Costo</field>
+            <field name="res_model">ctrl.caja.centro.costo</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_activos': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crear un nuevo centro de costo
+                </p>
+                <p>
+                    Define los centros de costo de tu empresa.
+                    Ejemplos: Almacén, Administración, Servicio, Logística, Planta, etc.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menú Centros de Costo -->
+        <menuitem id="menu_ctrl_caja_centros_costo" 
+                  name="Centros de Costo" 
+                  parent="menu_ctrl_caja_configuracion" 
+                  action="action_ctrl_caja_centro_costo" 
+                  sequence="20"/>
+
+    </data>
+</odoo>
