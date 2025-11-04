@@ -1,9 +1,5 @@
 <odoo>
     <data>
-        <!-- ============================================ -->
-        <!-- ========== CENTROS DE COSTO ================ -->
-        <!-- ============================================ -->
-        
         <!-- Vista Tree Centros de Costo -->
         <record id="view_ctrl_caja_centro_costo_tree" model="ir.ui.view">
             <field name="name">ctrl.caja.centro.costo.tree</field>
@@ -13,14 +9,17 @@
                     <field name="codigo"/>
                     <field name="name"/>
                     <field name="responsable_id" optional="show"/>
+                    <field name="monto_nivel1" optional="show" widget="monetary"/>
+                    <field name="monto_nivel2" optional="show" widget="monetary"/>
                     <field name="cantidad_solicitudes"/>
                     <field name="monto_total" sum="Total"/>
                     <field name="activo" widget="boolean_toggle"/>
+                    <field name="currency_id" invisible="1"/>
                 </tree>
             </field>
         </record>
 
-        <!-- Vista Form Centros de Costo -->
+        <!-- Vista Form Centros de Costo CON MONTOS Y AUTORIZADORES -->
         <record id="view_ctrl_caja_centro_costo_form" model="ir.ui.view">
             <field name="name">ctrl.caja.centro.costo.form</field>
             <field name="model">ctrl.caja.centro.costo</field>
@@ -49,12 +48,12 @@
                         </div>
                         
                         <group>
-                            <group>
+                            <group string="Información General">
                                 <field name="codigo" placeholder="ej: ALM, ADMIN, SERV..." 
                                        style="text-transform: uppercase;"/>
                                 <field name="responsable_id"/>
                             </group>
-                            <group>
+                            <group string="Estadísticas">
                                 <field name="monto_total" widget="monetary"/>
                                 <field name="currency_id" invisible="1"/>
                             </group>
@@ -63,6 +62,132 @@
                         <group>
                             <field name="descripcion" placeholder="Descripción del centro de costo..."/>
                         </group>
+                        
+                        <!-- TABS -->
+                        <notebook>
+                            <!-- TAB 1: MONTOS -->
+                            <page string="💰 Montos de Autorización" name="montos">
+                                <group>
+                                    <group string="Configuración de Montos para este Centro">
+                                        <label for="monto_nivel1" string="Nivel 1 - Hasta"/>
+                                        <div class="o_row">
+                                            <field name="monto_nivel1" class="oe_inline"/>
+                                        </div>
+                                        <div class="text-muted">
+                                            <small>Solicitudes hasta este monto solo requieren autorización de Nivel 1</small>
+                                        </div>
+                                        
+                                        <label for="monto_nivel2" string="Nivel 2 - Hasta"/>
+                                        <div class="o_row">
+                                            <field name="monto_nivel2" class="oe_inline"/>
+                                        </div>
+                                        <div class="text-muted">
+                                            <small>Solicitudes entre Nivel 1 y este monto requieren Nivel 1 + Nivel 2</small>
+                                        </div>
+                                        
+                                        <div class="o_form_label">Nivel 3 - Mayor a</div>
+                                        <div>
+                                            <field name="monto_nivel2" readonly="1" class="oe_inline" style="font-weight: bold;"/>
+                                        </div>
+                                        <div class="text-muted">
+                                            <small>Solicitudes superiores requieren los 3 niveles de autorización</small>
+                                        </div>
+                                    </group>
+                                    
+                                    <!-- 🔹 BLOQUE MODIFICADO -->
+                                    <group string="Ejemplos con la configuración actual">
+                                        <div class="o_row" style="gap: 16px; flex-wrap: wrap; align-items: stretch;">
+                                            
+                                            <div class="alert alert-success" style="flex: 1; min-width: 220px;">
+                                                <strong>Ejemplo 1:</strong> Solicitud de 
+                                                <field name="monto_nivel1" readonly="1" class="oe_inline" style="display: inline;"/> 
+                                                o menos
+                                                <br/>→ Requiere: <strong>Solo Nivel 1</strong>
+                                            </div>
+
+                                            <div class="alert alert-warning" style="flex: 1; min-width: 220px;">
+                                                <strong>Ejemplo 2:</strong> Solicitud entre 
+                                                <field name="monto_nivel1" readonly="1" class="oe_inline" style="display: inline;"/> 
+                                                y 
+                                                <field name="monto_nivel2" readonly="1" class="oe_inline" style="display: inline;"/>
+                                                <br/>→ Requiere: <strong>Nivel 1 + Nivel 2</strong>
+                                            </div>
+
+                                            <div class="alert alert-danger" style="flex: 1; min-width: 220px;">
+                                                <strong>Ejemplo 3:</strong> Solicitud mayor a 
+                                                <field name="monto_nivel2" readonly="1" class="oe_inline" style="display: inline;"/>
+                                                <br/>→ Requiere: <strong>Nivel 1 + Nivel 2 + Nivel 3</strong>
+                                            </div>
+                                        </div>
+                                    </group>
+                                </group>
+                            </page>
+                            
+                            <!-- TAB 2: AUTORIZADORES -->
+                            <page string="👥 Autorizadores" name="autorizadores">
+                                <group>
+                                    <group string="🟢 Nivel 1 (Solicitudes menores)">
+                                        <field name="autorizador_nivel1_ids" widget="many2many_tags" 
+                                               placeholder="Seleccione usuarios autorizadores..."
+                                               options="{'color_field': 'color', 'no_create': True}"/>
+                                        <div class="text-muted">
+                                            <small>
+                                                Pueden autorizar solicitudes hasta 
+                                                <field name="monto_nivel1" readonly="1" class="oe_inline" style="display: inline; font-weight: bold;"/>
+                                            </small>
+                                        </div>
+                                    </group>
+                                    
+                                    <group string="🟡 Nivel 2 (Solicitudes medianas)">
+                                        <field name="autorizador_nivel2_ids" widget="many2many_tags" 
+                                               placeholder="Seleccione usuarios autorizadores..."
+                                               options="{'color_field': 'color', 'no_create': True}"/>
+                                        <div class="text-muted">
+                                            <small>
+                                                Pueden autorizar solicitudes entre 
+                                                <field name="monto_nivel1" readonly="1" class="oe_inline" style="display: inline; font-weight: bold;"/>
+                                                y 
+                                                <field name="monto_nivel2" readonly="1" class="oe_inline" style="display: inline; font-weight: bold;"/>
+                                            </small>
+                                        </div>
+                                    </group>
+                                </group>
+                                
+                                <group>
+                                    <group string="🔴 Nivel 3 (Solicitudes mayores)">
+                                        <field name="autorizador_nivel3_ids" widget="many2many_tags" 
+                                               placeholder="Seleccione usuarios autorizadores..."
+                                               options="{'color_field': 'color', 'no_create': True}"/>
+                                        <div class="text-muted">
+                                            <small>
+                                                Pueden autorizar solicitudes superiores a 
+                                                <field name="monto_nivel2" readonly="1" class="oe_inline" style="display: inline; font-weight: bold;"/>
+                                            </small>
+                                        </div>
+                                    </group>
+                                </group>
+                                
+                                <div class="alert alert-info" role="alert">
+                                    <p><strong>📌 Importante:</strong></p>
+                                    <ul>
+                                        <li>Un usuario puede ser autorizador en varios niveles de este centro</li>
+                                        <li>Un usuario puede ser autorizador de varios centros de costo</li>
+                                        <li>Al menos debe haber 1 autorizador en Nivel 1</li>
+                                        <li>Los montos son específicos de este centro de costo</li>
+                                    </ul>
+                                </div>
+                            </page>
+                            
+                            <!-- TAB 3: INFORMACIÓN -->
+                            <page string="📊 Información" name="info">
+                                <group>
+                                    <group string="Estadísticas">
+                                        <field name="cantidad_solicitudes" readonly="1"/>
+                                        <field name="monto_total" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
                     </sheet>
                     <div class="oe_chatter">
                         <field name="message_follower_ids"/>
@@ -72,7 +197,7 @@
             </field>
         </record>
 
-        <!-- Vista Search Centros de Costo -->
+        <!-- Vista Search -->
         <record id="view_ctrl_caja_centro_costo_search" model="ir.ui.view">
             <field name="name">ctrl.caja.centro.costo.search</field>
             <field name="model">ctrl.caja.centro.costo</field>
@@ -81,9 +206,18 @@
                     <field name="name"/>
                     <field name="codigo"/>
                     <field name="responsable_id"/>
+                    <field name="autorizador_nivel1_ids"/>
+                    <field name="autorizador_nivel2_ids"/>
+                    <field name="autorizador_nivel3_ids"/>
                     <separator/>
                     <filter string="Activos" name="activos" domain="[('activo', '=', True)]"/>
                     <filter string="Inactivos" name="inactivos" domain="[('activo', '=', False)]"/>
+                    <separator/>
+                    <filter string="Mis Centros (Soy Autorizador)" name="mis_centros"
+                            domain="['|', '|', 
+                                    ('autorizador_nivel1_ids', 'in', [uid]),
+                                    ('autorizador_nivel2_ids', 'in', [uid]),
+                                    ('autorizador_nivel3_ids', 'in', [uid])]"/>
                     <group expand="0" string="Agrupar por">
                         <filter string="Responsable" name="group_by_responsable" 
                                 context="{'group_by': 'responsable_id'}"/>
@@ -92,7 +226,7 @@
             </field>
         </record>
 
-        <!-- Acción Centros de Costo -->
+        <!-- Acción -->
         <record id="action_ctrl_caja_centro_costo" model="ir.actions.act_window">
             <field name="name">Centros de Costo</field>
             <field name="res_model">ctrl.caja.centro.costo</field>
@@ -103,18 +237,20 @@
                     Crear un nuevo centro de costo
                 </p>
                 <p>
-                    Define los centros de costo de tu empresa.
-                    Ejemplos: Almacén, Administración, Servicio, Logística, Planta, etc.
+                    Define los centros de costo de tu empresa, configura los montos
+                    de autorización y asigna los autorizadores para cada nivel.
+                </p>
+                <p class="text-muted">
+                    Cada centro puede tener montos diferentes según sus necesidades.
                 </p>
             </field>
         </record>
 
-        <!-- Menú Centros de Costo -->
+        <!-- Menú -->
         <menuitem id="menu_ctrl_caja_centros_costo" 
                   name="Centros de Costo" 
                   parent="menu_ctrl_caja_configuracion" 
                   action="action_ctrl_caja_centro_costo" 
                   sequence="20"/>
-
     </data>
 </odoo>

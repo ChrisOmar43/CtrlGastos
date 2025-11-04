@@ -26,34 +26,129 @@
         </record>
 
         <!-- ============================================ -->
-        <!-- =========== VISTAS NIVEL 1 ================= -->
+        <!-- =========== VISTA KANBAN UNIFICADA ========= -->
         <!-- ============================================ -->
-
-        <!-- Vista Tree Nivel 1 -->
-        <record id="view_autorizador_nivel1_tree" model="ir.ui.view">
-            <field name="name">autorizador.nivel1.tree</field>
+        
+        <record id="view_autorizador_kanban" model="ir.ui.view">
+            <field name="name">autorizador.kanban</field>
             <field name="model">ctrl.caja.solicitud</field>
             <field name="arch" type="xml">
-                <tree decoration-warning="True" create="false" delete="false" edit="false">
+                <kanban default_group_by="estado" create="false" delete="false" class="o_kanban_small_column">
                     <field name="numero_solicitud"/>
+                    <field name="responsable_id"/>
                     <field name="fecha_solicitud"/>
-                    <field name="responsable_id" string="Solicitante"/>
                     <field name="categoria_id"/>
-                    <field name="concepto_texto" optional="show"/>
-                    <field name="monto_estimado" sum="Total a Autorizar"/>
-                    <field name="nivel_requerido" widget="badge"/>
-                    <field name="metodo_pago" optional="hide"/>
-                </tree>
+                    <field name="concepto_texto"/>
+                    <field name="centro_costo_id"/>
+                    <field name="monto_estimado"/>
+                    <field name="currency_id"/>
+                    <field name="estado"/>
+                    <field name="nivel_requerido"/>
+                    <field name="nivel_requerido_texto"/>
+                    <field name="puedo_autorizar"/>
+                    <field name="proveedor_id"/>
+                    <field name="proveedor_texto"/>
+                    
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="numero_solicitud"/>
+                                        </strong>
+                                        <br/>
+                                        <span class="text-muted">
+                                            <i class="fa fa-user"/> <field name="responsable_id"/>
+                                        </span>
+                                    </div>
+                                    <div class="o_kanban_record_top_right">
+                                        <span t-attf-class="badge #{record.nivel_requerido.raw_value == 'nivel1' ? 'badge-success' : record.nivel_requerido.raw_value == 'nivel2' ? 'badge-warning' : 'badge-danger'}">
+                                            <field name="nivel_requerido_texto"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="o_kanban_record_body">
+                                    <div class="row mb-2">
+                                        <div class="col-12">
+                                            <i class="fa fa-calendar"/> 
+                                            <field name="fecha_solicitud"/>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-2">
+                                        <div class="col-12">
+                                            <i class="fa fa-building"/> 
+                                            <strong><field name="centro_costo_id"/></strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-2">
+                                        <div class="col-12">
+                                            <i class="fa fa-tag"/> 
+                                            <t t-if="record.categoria_id.value">
+                                                <field name="categoria_id"/>
+                                            </t>
+                                            <t t-else="">
+                                                <field name="concepto_texto"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-2">
+                                        <div class="col-12">
+                                            <i class="fa fa-truck"/> 
+                                            <t t-if="record.proveedor_id.value">
+                                                <field name="proveedor_id"/>
+                                            </t>
+                                            <t t-else="">
+                                                <field name="proveedor_texto"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <strong class="text-primary" style="font-size: 1.3em;">
+                                                <i class="fa fa-money"/> 
+                                                <field name="monto_estimado" widget="monetary"/>
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="o_kanban_record_bottom mt-2">
+                                    <div class="oe_kanban_bottom_left">
+                                        <!-- Espacio para futuras acciones -->
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <!-- Indicador visual de que puedo autorizar -->
+                                        <t t-if="record.puedo_autorizar.raw_value">
+                                            <span class="badge badge-pill badge-success">
+                                                <i class="fa fa-check-circle"/> Puedes Autorizar
+                                            </span>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
             </field>
         </record>
 
-        <!-- Vista Form Nivel 1 -->
-        <record id="view_autorizador_nivel1_form" model="ir.ui.view">
-            <field name="name">autorizador.nivel1.form</field>
+        <!-- ============================================ -->
+        <!-- ============ VISTA FORM UNIFICADA ========== -->
+        <!-- ============================================ -->
+        
+        <record id="view_autorizador_form_unificada" model="ir.ui.view">
+            <field name="name">autorizador.form.unificada</field>
             <field name="model">ctrl.caja.solicitud</field>
             <field name="arch" type="xml">
                 <form create="false" delete="false" edit="false">
                     <header>
+                        <!-- Botones Nivel 1 -->
                         <button name="action_autorizar_nivel1" 
                                 string="✓ AUTORIZAR" 
                                 type="object" 
@@ -64,114 +159,36 @@
                                 string="✗ RECHAZAR" 
                                 type="object" 
                                 class="btn-danger"
-                                invisible="estado != 'autorizacion_nivel1'"
-                                confirm="¿Está seguro de rechazar esta solicitud?"/>
-                        <field name="estado" widget="statusbar" 
-                               statusbar_visible="autorizacion_nivel1"/>
-                    </header>
-                    
-                    <sheet>
-                        <div class="oe_title">
-                            <label for="numero_solicitud" string="Solicitud"/>
-                            <h1>
-                                <field name="numero_solicitud" readonly="1"/>
-                            </h1>
-                        </div>
+                                invisible="estado != 'autorizacion_nivel1'"/>
                         
-                        <group>
-                            <group string="Información del Solicitante">
-                                <field name="responsable_id" readonly="1"/>
-                                <field name="fecha_solicitud" readonly="1"/>
-                            </group>
-                            
-                            <group string="Información Financiera">
-                                <field name="monto_estimado" readonly="1" 
-                                       class="oe_read_only" 
-                                       style="font-size: 1.5em; font-weight: bold;"/>
-                                <field name="currency_id" invisible="1"/>
-                                <field name="nivel_requerido" readonly="1" widget="badge"/>
-                                <field name="metodo_pago" readonly="1"/>
-                            </group>
-                        </group>
-                        
-                        <group>
-                            <group string="Concepto Solicitado">
-                                <field name="concepto_otro" readonly="1" invisible="1"/>
-                                <field name="categoria_id" readonly="1" 
-                                       invisible="concepto_otro"
-                                       string="Concepto"/>
-                                <field name="concepto_texto" readonly="1" 
-                                       invisible="not concepto_otro"
-                                       string="Concepto (Otros)"/>
-                            </group>
-                            
-                            <group string="Proveedor">
-                                <field name="proveedor_otro" readonly="1" invisible="1"/>
-                                <field name="proveedor_id" readonly="1" 
-                                       invisible="proveedor_otro"/>
-                                <field name="proveedor_texto" readonly="1" 
-                                       invisible="not proveedor_otro"
-                                       string="Proveedor (Otros)"/>
-                            </group>
-                        </group>
-                        
-                        <notebook>
-                            <page string="Descripción / Justificación" name="descripcion">
-                                <group>
-                                    <field name="descripcion" readonly="1" nolabel="1" 
-                                           placeholder="Sin descripción proporcionada"/>
-                                </group>
-                            </page>
-                        </notebook>
-                    </sheet>
-                </form>
-            </field>
-        </record>
-
-        <!-- ============================================ -->
-        <!-- =========== VISTAS NIVEL 2 ================= -->
-        <!-- ============================================ -->
-
-        <!-- Vista Tree Nivel 2 -->
-        <record id="view_autorizador_nivel2_tree" model="ir.ui.view">
-            <field name="name">autorizador.nivel2.tree</field>
-            <field name="model">ctrl.caja.solicitud</field>
-            <field name="arch" type="xml">
-                <tree decoration-warning="True" create="false" delete="false" edit="false">
-                    <field name="numero_solicitud"/>
-                    <field name="fecha_solicitud"/>
-                    <field name="responsable_id" string="Solicitante"/>
-                    <field name="categoria_id"/>
-                    <field name="concepto_texto" optional="show"/>
-                    <field name="monto_estimado" sum="Total a Autorizar"/>
-                    <field name="nivel_requerido" widget="badge"/>
-                    <field name="autorizador_nivel1_id" string="Autorizado N1 por"/>
-                    <field name="fecha_autorizacion_nivel1" string="Fecha N1"/>
-                </tree>
-            </field>
-        </record>
-
-        <!-- Vista Form Nivel 2 -->
-        <record id="view_autorizador_nivel2_form" model="ir.ui.view">
-            <field name="name">autorizador.nivel2.form</field>
-            <field name="model">ctrl.caja.solicitud</field>
-            <field name="arch" type="xml">
-                <form create="false" delete="false" edit="false">
-                    <header>
+                        <!-- Botones Nivel 2 -->
                         <button name="action_autorizar_nivel2" 
                                 string="✓ AUTORIZAR NIVEL 2" 
                                 type="object" 
                                 class="oe_highlight btn-success"
                                 invisible="estado != 'autorizacion_nivel2'"
-                                confirm="¿Está seguro de autorizar esta solicitud en Nivel 2?"/>
+                                confirm="¿Está seguro de autorizar esta solicitud?"/>
                         <button name="action_rechazar_nivel2" 
                                 string="✗ RECHAZAR" 
                                 type="object" 
                                 class="btn-danger"
-                                invisible="estado != 'autorizacion_nivel2'"
-                                confirm="¿Está seguro de rechazar esta solicitud?"/>
+                                invisible="estado != 'autorizacion_nivel2'"/>
+                        
+                        <!-- Botones Nivel 3 -->
+                        <button name="action_autorizar_nivel3" 
+                                string="✓ AUTORIZAR NIVEL 3" 
+                                type="object" 
+                                class="oe_highlight btn-success"
+                                invisible="estado != 'autorizacion_nivel3'"
+                                confirm="¿Está seguro de autorizar esta solicitud?"/>
+                        <button name="action_rechazar_nivel3" 
+                                string="✗ RECHAZAR" 
+                                type="object" 
+                                class="btn-danger"
+                                invisible="estado != 'autorizacion_nivel3'"/>
+                        
                         <field name="estado" widget="statusbar" 
-                               statusbar_visible="autorizacion_nivel1,autorizacion_nivel2"/>
+                               statusbar_visible="autorizacion_nivel1,autorizacion_nivel2,autorizacion_nivel3,autorizado"/>
                     </header>
                     
                     <sheet>
@@ -186,6 +203,7 @@
                             <group string="Información del Solicitante">
                                 <field name="responsable_id" readonly="1"/>
                                 <field name="fecha_solicitud" readonly="1"/>
+                                <field name="centro_costo_id" readonly="1"/>
                             </group>
                             
                             <group string="Información Financiera">
@@ -193,7 +211,7 @@
                                        class="oe_read_only" 
                                        style="font-size: 1.5em; font-weight: bold;"/>
                                 <field name="currency_id" invisible="1"/>
-                                <field name="nivel_requerido" readonly="1" widget="badge"/>
+                                <field name="nivel_requerido_texto" readonly="1"/>
                                 <field name="metodo_pago" readonly="1"/>
                             </group>
                         </group>
@@ -227,220 +245,123 @@
                                 </group>
                             </page>
                             
-                            <page string="Autorización Nivel 1" name="nivel1">
+                            <page string="Historial de Autorizaciones" name="autorizaciones">
                                 <group>
-                                    <group string="Autorizado por">
-                                        <field name="autorizador_nivel1_id" readonly="1"/>
-                                        <field name="fecha_autorizacion_nivel1" readonly="1"/>
-                                    </group>
-                                    <group string="Comentarios">
-                                        <field name="comentario_nivel1" readonly="1" nolabel="1"
-                                               placeholder="Sin comentarios"/>
-                                    </group>
-                                </group>
-                            </page>
-                        </notebook>
-                    </sheet>
-                </form>
-            </field>
-        </record>
-
-        <!-- ============================================ -->
-        <!-- =========== VISTAS NIVEL 3 ================= -->
-        <!-- ============================================ -->
-
-        <!-- Vista Tree Nivel 3 -->
-        <record id="view_autorizador_nivel3_tree" model="ir.ui.view">
-            <field name="name">autorizador.nivel3.tree</field>
-            <field name="model">ctrl.caja.solicitud</field>
-            <field name="arch" type="xml">
-                <tree decoration-danger="True" create="false" delete="false" edit="false">
-                    <field name="numero_solicitud"/>
-                    <field name="fecha_solicitud"/>
-                    <field name="responsable_id" string="Solicitante"/>
-                    <field name="categoria_id"/>
-                    <field name="concepto_texto" optional="show"/>
-                    <field name="monto_estimado" sum="Total a Autorizar"/>
-                    <field name="nivel_requerido" widget="badge"/>
-                    <field name="autorizador_nivel1_id" string="Autorizado N1 por"/>
-                    <field name="autorizador_nivel2_id" string="Autorizado N2 por"/>
-                </tree>
-            </field>
-        </record>
-
-        <!-- Vista Form Nivel 3 -->
-        <record id="view_autorizador_nivel3_form" model="ir.ui.view">
-            <field name="name">autorizador.nivel3.form</field>
-            <field name="model">ctrl.caja.solicitud</field>
-            <field name="arch" type="xml">
-                <form create="false" delete="false" edit="false">
-                    <header>
-                        <button name="action_autorizar_nivel3" 
-                                string="✓ AUTORIZAR NIVEL 3 (FINAL)" 
-                                type="object" 
-                                class="oe_highlight btn-success"
-                                invisible="estado != 'autorizacion_nivel3'"
-                                confirm="¿Está seguro de autorizar esta solicitud? Esta es la autorización FINAL."/>
-                        <button name="action_rechazar_nivel3" 
-                                string="✗ RECHAZAR" 
-                                type="object" 
-                                class="btn-danger"
-                                invisible="estado != 'autorizacion_nivel3'"
-                                confirm="¿Está seguro de rechazar esta solicitud?"/>
-                        <field name="estado" widget="statusbar" 
-                               statusbar_visible="autorizacion_nivel1,autorizacion_nivel2,autorizacion_nivel3"/>
-                    </header>
-                    
-                    <sheet>
-                        <div class="oe_title">
-                            <label for="numero_solicitud" string="Solicitud"/>
-                            <h1>
-                                <field name="numero_solicitud" readonly="1"/>
-                            </h1>
-                        </div>
-                        
-                        <group>
-                            <group string="Información del Solicitante">
-                                <field name="responsable_id" readonly="1"/>
-                                <field name="fecha_solicitud" readonly="1"/>
-                            </group>
-                            
-                            <group string="Información Financiera">
-                                <field name="monto_estimado" readonly="1" 
-                                       class="oe_read_only" 
-                                       style="font-size: 1.5em; font-weight: bold; color: #d9534f;"/>
-                                <field name="currency_id" invisible="1"/>
-                                <field name="nivel_requerido" readonly="1" widget="badge"/>
-                                <field name="metodo_pago" readonly="1"/>
-                            </group>
-                        </group>
-                        
-                        <group>
-                            <group string="Concepto Solicitado">
-                                <field name="concepto_otro" readonly="1" invisible="1"/>
-                                <field name="categoria_id" readonly="1" 
-                                       invisible="concepto_otro"
-                                       string="Concepto"/>
-                                <field name="concepto_texto" readonly="1" 
-                                       invisible="not concepto_otro"
-                                       string="Concepto (Otros)"/>
-                            </group>
-                            
-                            <group string="Proveedor">
-                                <field name="proveedor_otro" readonly="1" invisible="1"/>
-                                <field name="proveedor_id" readonly="1" 
-                                       invisible="proveedor_otro"/>
-                                <field name="proveedor_texto" readonly="1" 
-                                       invisible="not proveedor_otro"
-                                       string="Proveedor (Otros)"/>
-                            </group>
-                        </group>
-                        
-                        <notebook>
-                            <page string="Descripción / Justificación" name="descripcion">
-                                <group>
-                                    <field name="descripcion" readonly="1" nolabel="1" 
-                                           placeholder="Sin descripción proporcionada"/>
-                                </group>
-                            </page>
-                            
-                            <page string="Autorizaciones Previas" name="autorizaciones_previas">
-                                <group>
-                                    <group string="Nivel 1">
+                                    <group string="🟢 Nivel 1">
                                         <field name="autorizador_nivel1_id" readonly="1"/>
                                         <field name="fecha_autorizacion_nivel1" readonly="1"/>
                                         <field name="comentario_nivel1" readonly="1" nolabel="1"
                                                placeholder="Sin comentarios"/>
                                     </group>
-                                    <group string="Nivel 2">
+                                    <group string="🟡 Nivel 2">
                                         <field name="autorizador_nivel2_id" readonly="1"/>
                                         <field name="fecha_autorizacion_nivel2" readonly="1"/>
                                         <field name="comentario_nivel2" readonly="1" nolabel="1"
                                                placeholder="Sin comentarios"/>
                                     </group>
                                 </group>
+                                <group>
+                                    <group string="🔴 Nivel 3">
+                                        <field name="autorizador_nivel3_id" readonly="1"/>
+                                        <field name="fecha_autorizacion_nivel3" readonly="1"/>
+                                        <field name="comentario_nivel3" readonly="1" nolabel="1"
+                                               placeholder="Sin comentarios"/>
+                                    </group>
+                                </group>
                             </page>
                         </notebook>
                     </sheet>
+                    
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
                 </form>
             </field>
         </record>
 
         <!-- ============================================ -->
-        <!-- ============== ACCIONES ==================== -->
+        <!-- ============ BÚSQUEDA AVANZADA ============= -->
         <!-- ============================================ -->
+        
+        <record id="view_autorizador_search" model="ir.ui.view">
+            <field name="name">autorizador.search</field>
+            <field name="model">ctrl.caja.solicitud</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="numero_solicitud"/>
+                    <field name="responsable_id"/>
+                    <field name="centro_costo_id"/>
+                    <field name="categoria_id"/>
+                    <field name="monto_estimado"/>
+                    
+                    <separator/>
+                    
+                    <filter string="Mis Pendientes" name="mis_pendientes" 
+                            domain="[('puedo_autorizar', '=', True)]"/>
+                    
+                    <separator/>
+                    
+                    <filter string="Nivel 1" name="nivel1"
+                            domain="[('estado', '=', 'autorizacion_nivel1')]"/>
+                    <filter string="Nivel 2" name="nivel2"
+                            domain="[('estado', '=', 'autorizacion_nivel2')]"/>
+                    <filter string="Nivel 3" name="nivel3"
+                            domain="[('estado', '=', 'autorizacion_nivel3')]"/>
+                    
+                    <separator/>
+                    
+                    <filter string="Esta semana" name="esta_semana"
+                            domain="[('fecha_solicitud', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                    <filter string="Este mes" name="este_mes"
+                            domain="[('fecha_solicitud', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                    
+                    <group expand="0" string="Agrupar por">
+                        <filter string="Estado" name="group_estado" context="{'group_by': 'estado'}"/>
+                        <filter string="Centro de Costo" name="group_centro" context="{'group_by': 'centro_costo_id'}"/>
+                        <filter string="Solicitante" name="group_solicitante" context="{'group_by': 'responsable_id'}"/>
+                        <filter string="Fecha" name="group_fecha" context="{'group_by': 'fecha_solicitud'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
 
-        <!-- Acción Nivel 1 -->
-        <record id="action_autorizador_nivel1" model="ir.actions.act_window">
-            <field name="name">Autorizar Nivel 1</field>
+        <!-- ============================================ -->
+        <!-- ========= ACCIÓN UNIFICADA ================= -->
+        <!-- ============================================ -->
+        
+        <record id="action_autorizador_unificado" model="ir.actions.act_window">
+            <field name="name">Mis Autorizaciones</field>
             <field name="res_model">ctrl.caja.solicitud</field>
-            <field name="view_mode">tree,form</field>
-            <field name="domain">[('estado', '=', 'autorizacion_nivel1')]</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="domain">[('puedo_autorizar', '=', True)]</field>
+            <field name="context">{
+                'search_default_mis_pendientes': 1,
+                'search_default_group_estado': 1
+            }</field>
             <field name="view_ids" eval="[(5, 0, 0),
-                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_autorizador_nivel1_tree')}),
-                (0, 0, {'view_mode': 'form', 'view_id': ref('view_autorizador_nivel1_form')})]"/>
+                (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_autorizador_kanban')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_autorizador_form_unificada')})]"/>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
-                    No hay solicitudes pendientes de autorización
+                    🎉 No hay solicitudes pendientes de tu autorización
+                </p>
+                <p>
+                    Aquí aparecerán las solicitudes que requieren tu autorización
+                    según los centros de costo donde estés configurado como autorizador.
                 </p>
             </field>
         </record>
 
-        <!-- Acción Nivel 2 -->
-        <record id="action_autorizador_nivel2" model="ir.actions.act_window">
-            <field name="name">Autorizar Nivel 2</field>
-            <field name="res_model">ctrl.caja.solicitud</field>
-            <field name="view_mode">tree,form</field>
-            <field name="domain">[('estado', '=', 'autorizacion_nivel2')]</field>
-            <field name="view_ids" eval="[(5, 0, 0),
-                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_autorizador_nivel2_tree')}),
-                (0, 0, {'view_mode': 'form', 'view_id': ref('view_autorizador_nivel2_form')})]"/>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
-                    No hay solicitudes pendientes de autorización
-                </p>
-            </field>
-        </record>
-
-        <!-- Acción Nivel 3 -->
-        <record id="action_autorizador_nivel3" model="ir.actions.act_window">
-            <field name="name">Autorizar Nivel 3</field>
-            <field name="res_model">ctrl.caja.solicitud</field>
-            <field name="view_mode">tree,form</field>
-            <field name="domain">[('estado', '=', 'autorizacion_nivel3')]</field>
-            <field name="view_ids" eval="[(5, 0, 0),
-                (0, 0, {'view_mode': 'tree', 'view_id': ref('view_autorizador_nivel3_tree')}),
-                (0, 0, {'view_mode': 'form', 'view_id': ref('view_autorizador_nivel3_form')})]"/>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
-                    No hay solicitudes pendientes de autorización
-                </p>
-            </field>
-        </record>
-
-        <!-- ============ MENÚS ============ -->
+        <!-- ============================================ -->
+        <!-- ================ MENÚ ====================== -->
+        <!-- ============================================ -->
+        
         <menuitem id="menu_ctrl_caja_autorizaciones" 
                   name="Autorizaciones" 
                   parent="menu_ctrl_caja_root" 
+                  action="action_autorizador_unificado"
                   sequence="10"/>
-        
-        <menuitem id="menu_autorizador_nivel1" 
-                  name="Nivel 1 (&lt; $1,000)" 
-                  parent="menu_ctrl_caja_autorizaciones" 
-                  action="action_autorizador_nivel1" 
-                  sequence="10"/>
-
-        <menuitem id="menu_autorizador_nivel2" 
-                  name="Nivel 2 ($1,000 - $2,000)" 
-                  parent="menu_ctrl_caja_autorizaciones" 
-                  action="action_autorizador_nivel2" 
-                  sequence="20"/>
-
-        <menuitem id="menu_autorizador_nivel3" 
-                  name="Nivel 3 (&gt; $2,000)" 
-                  parent="menu_ctrl_caja_autorizaciones" 
-                  action="action_autorizador_nivel3" 
-                  sequence="30"/>
 
     </data>
 </odoo>

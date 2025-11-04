@@ -21,7 +21,7 @@
         "views/configuracion_views.xml",     
         "views/concepto_views.xml",          
         "views/centro_costo_views.xml",      
-        "views/proveedor_views.xml",         
+        "views/proveedor_views.xml", 
     ],
     "installable": True,
     "application": True,
